@@ -86,6 +86,5 @@ const role= sessionStorage.getItem('role') || 'student';
         function goHome() {
             window.location.href = "index.html"; // change if needed
         }
-
         renderLeaderboard();
         document.getElementById("homeBtn").addEventListener("click", goHome);

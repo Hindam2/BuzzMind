@@ -1,127 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Library - BuzzMind</title>
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="../BuzzMind1/Home Page/style.css">
-</head>
+    <link rel="stylesheet" href="/Student pages/Libary/style.css" />
+    <link rel="stylesheet" href="/Student pages/Home Page/style.css" />
+  </head>
 
-<body>
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <a href="#" class="logo">BuzzMind</a>
 
-<!-- NAVBAR -->
-<nav class="navbar">
-    <a href="#" class="logo">BuzzMind</a>
-
-    <ul class="nav-links">
-        <li><a href="../Home Page/Index.html">Discover</a></li>
+      <ul class="nav-links">
+        <li><a href="/Student pages/Home Page/Index.html">Discover</a></li>
         <li><a href="#" class="active">Library</a></li>
-        <li><a href="../reports_design/reports_page.html">Reports</a></li>
-    </ul>
+        <li>
+          <a href="/Student pages/reports_design/reports_page.html">Reports</a>
+        </li>
+      </ul>
 
-    <div class="nav-actions">
+      <div class="nav-actions">
         <div class="avatar">
-            <a href="../Settings page/Settings.html">
-                <img src="https://i.pravatar.cc/150?u=user123" alt="User">
-            </a>
+          <a href="/Student pages/Settings page/Settings.html">
+            <img src="https://i.pravatar.cc/150?u=user123" alt="User" />
+          </a>
         </div>
-    </div>
-</nav>
+      </div>
+    </nav>
 
-<!-- MAIN CONTENT -->
-<main class="content-wrapper">
-
-    <!-- HEADER -->
-    <header class="library-header">
+    <!-- MAIN CONTENT -->
+    <main class="content-wrapper">
+      <!-- HEADER -->
+      <header class="library-header">
         <p class="subtitle">YOUR COLLECTION</p>
         <h1>Library</h1>
 
         <!-- SEARCH -->
         <div class="search-container">
-            <input type="text" placeholder="Search your quizzes..." id="quizSearch">
-            <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search your quizzes..."
+            id="quizSearch" />
+          <span class="search-icon">🔍</span>
         </div>
-    </header>
+      </header>
 
-    <!-- MY QUIZZES -->
-    <section class="quiz-section">
-
+      <!-- MY QUIZZES -->
+      <section class="quiz-section">
         <div class="section-header">
-            <h2>📁 My Quizzes</h2>
+          <h2>📁 My Quizzes</h2>
         </div>
 
-        <div class="quiz-grid" id="myQuizzes">
+        <div class="quiz-grid" id="myQuizzes"></div>
+      </section>
 
-            <div class="quiz-card">
-                <div class="card-image science">
-                    <span class="badge science-tag">SCIENCE</span>
-                    <button class="play-btn">▶</button>
-                </div>
-                <div class="card-info">
-                    <h3>The Quantum Mechanics Challenge</h3>
-                    <p>15 Questions • 1.2k plays</p>
-                </div>
-            </div>
-
-            <div class="quiz-card">
-                <div class="card-image tech">
-                    <span class="badge tech-tag">TECHNOLOGY</span>
-                    <button class="play-btn">▶</button>
-                </div>
-                <div class="card-info">
-                    <h3>Future of AI & Robotics</h3>
-                    <p>10 Questions • 842 plays</p>
-                </div>
-            </div>
-
-            <div class="quiz-card">
-                <div class="card-image art">
-                    <span class="badge art-tag">ART</span>
-                    <button class="play-btn">▶</button>
-                </div>
-                <div class="card-info">
-                    <h3>History of Impressionism</h3>
-                    <p>20 Questions • 2.1k plays</p>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- SHARED -->
-    <section class="quiz-section">
-
+      <!-- SHARED -->
+      <section class="quiz-section">
         <div class="section-header">
-            <h2>👥 Shared with Me</h2>
+          <h2>👥 Shared with Me</h2>
         </div>
 
-        <div class="shared-list">
+        <div class="shared-list"></div>
+      </section>
+    </main>
 
-            <div class="shared-item">
-                <div class="shared-icon">🧠</div>
-                <div class="shared-text">
-                    <h4>Introduction to Psychology</h4>
-                    <p>by <span>Dr. Sarah Miller</span> • 8 Questions</p>
-                </div>
-                <button class="play-circle">▶</button>
-            </div>
-
-            <div class="shared-item">
-                <div class="shared-icon">➗</div>
-                <div class="shared-text">
-                    <h4>Advanced Algebra Quiz</h4>
-                    <p>by <span>Math Department</span> • 12 Questions</p>
-                </div>
-                <button class="play-circle">▶</button>
-            </div>
-
-        </div>
-    </section>
-
-</main>
-
-<script src="Script.js"></script>
-</body>
+    <script src="/buzzmind-api.js"></script>
+    <script src="/Student pages/Libary/Script.js"></script>
+  </body>
 </html>

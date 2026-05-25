@@ -1,32 +1,32 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BuzzMind – Leaderboard</title>
-  <link rel="stylesheet" href="leaderboard.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BuzzMind – Leaderboard</title>
+    <link rel="stylesheet" href="/Quiz/leaderboard.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=DM+Sans:wght@400;500&display=swap"
+      rel="stylesheet" />
+  </head>
+  <body>
+    <div class="lb-wrap">
+      <div class="lb-title">🏆 Game Over!</div>
 
+      <div class="score-card" id="studentCard">
+        <div class="emoji">🎉</div>
+        <h2 id="playerNameEl">Player</h2>
+        <div class="big" id="scoreEl">0 / 0</div>
+        <p>correct answers</p>
+      </div>
 
-  <div class="lb-wrap">
-    <div class="lb-title">🏆 Game Over!</div>
+      <div class="lb-card">
+        <h3>Final Rankings</h3>
+        <div id="rankingsList"></div>
+      </div>
 
-    <div class="score-card" id="studentCard">
-      <div class="emoji">🎉</div>
-      <h2 id="playerNameEl">Player</h2>
-      <div class="big" id="scoreEl">0 / 0</div>
-      <p>correct answers</p>
+      <a href="../Student pages/Home Page/Index.html">Back to Home</a>
     </div>
-
-    <div class="lb-card">
-      <h3>Final Rankings</h3>
-      <div id="rankingsList"></div>
-    </div>
-
-    <a href="../Student pages/Home Page/Index.html">Back to Home</a>
-  </div>
-<script src="leaderboard.js"></script>
-</body>
+    <script src="/Quiz/leaderboard.js"></script>
+  </body>
 </html>

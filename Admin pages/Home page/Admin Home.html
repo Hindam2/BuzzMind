@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin – Home</title>
-  <link rel="stylesheet" href="Admin Home.css"/>
+  <title>Admin - Home</title>
+  <link rel="stylesheet" href="/Admin pages/Home page/Admin Home.css"/>
 </head>
 <body>
 
-<!-- ══ SIDEBAR ══ -->
 <aside class="sidebar">
   <div class="sb-brand">BuzzMind</div>
 
@@ -21,18 +20,15 @@
   </div>
 
   <nav class="side-nav">
-    <a href="#" class="sl on"><span class="sl-ico">🎓</span> Professors</a>
+    <a href="#" class="sl on"><span class="sl-ico">&#127891;</span> Professors</a>
   </nav>
 
   <div class="sb-bottom">
-    <a href="../Settings page/SettingsP.html" class="sl-sm">↪ Sign Out</a>
+    <a href="/Admin pages/Settings page/SettingsP.html" class="sl-sm">&#8618; Sign Out</a>
   </div>
 </aside>
 
-<!-- ══ MAIN ══ -->
 <div class="main">
-
-  <!-- Topbar -->
   <header class="topbar">
     <span class="tb-brand">BuzzMind</span>
     <nav class="tb-nav">
@@ -40,26 +36,22 @@
     </nav>
     <div class="tb-right">
       <div class="search-wrap">
-        <span class="search-ico">🔍</span>
+        <span class="search-ico">&#128269;</span>
         <input type="text" placeholder="Search professors..." id="searchInput"/>
       </div>
-      <button class="icon-btn">👤</button>
+      <button class="icon-btn" type="button">&#128100;</button>
     </div>
   </header>
 
-  <!-- Content -->
   <div class="content">
-
-    <!-- Page Header -->
     <div class="page-header">
       <div>
         <h1>Professor Directory</h1>
         <p>Managing 24 faculty members across 6 departments.</p>
       </div>
-      <button class="btn-add" onclick="addProfessor()">👤+ Add Professor</button>
+      <button class="btn-add" id="openAddProfessor" type="button">+ Add Professor</button>
     </div>
 
-    <!-- Stat Pills -->
     <div class="stats-row">
       <div class="stat-pill purple">
         <div class="stat-lbl">ACTIVE STAFF</div>
@@ -79,10 +71,7 @@
       </div>
     </div>
 
-    <!-- Professor Cards Grid -->
     <div class="prof-grid" id="profGrid">
-
-      <!-- Card 1 -->
       <div class="prof-card">
         <div class="prof-top">
           <div class="prof-av" style="background:linear-gradient(135deg,#6b3a2a,#9b5a3a)">ER</div>
@@ -91,13 +80,13 @@
               <h3>Dr. Elena Rodriguez</h3>
               <span class="dept-badge physics">PHYSICS</span>
             </div>
-            <div class="email">✉ e.rodriguez@university.edu</div>
+            <div class="email">&#9993; e.rodriguez@university.edu</div>
           </div>
         </div>
         <div class="prof-stats">
           <div class="pstat">
             <div class="pstat-lbl">TOTAL CLASSES</div>
-            <div class="pstat-val">04 <span class="dots green-dots">●●●●●</span></div>
+            <div class="pstat-val">04 <span class="dots green-dots">&#9679;&#9679;&#9679;&#9679;&#9679;</span></div>
           </div>
           <div class="pstat">
             <div class="pstat-lbl">TOTAL STUDENTS</div>
@@ -105,12 +94,11 @@
           </div>
         </div>
         <div class="card-foot">
-          <a href="../prof dashboard/index.html"><button class="btn-view" onclick="viewDetails('Dr. Elena Rodriguez')">View Details</button></a>
-          <button class="btn-del" onclick="deleteProfessor(this, 'Dr. Elena Rodriguez')">🗑</button>
+          <a href="/Admin pages/prof dashboard/index.html"><button class="btn-view" type="button">View Details</button></a>
+          <button class="btn-del" type="button" onclick="deleteProfessor(this.closest('.prof-card'), null, 'Dr. Elena Rodriguez')">&#128465;</button>
         </div>
       </div>
 
-      <!-- Card 2 -->
       <div class="prof-card">
         <div class="prof-top">
           <div class="prof-av" style="background:linear-gradient(135deg,#2d3a2a,#4a5a3a)">JT</div>
@@ -119,13 +107,13 @@
               <h3>Prof. Julian Thorne</h3>
               <span class="dept-badge cs">COMPUTER SCIENCE</span>
             </div>
-            <div class="email">✉ j.thorne@university.edu</div>
+            <div class="email">&#9993; j.thorne@university.edu</div>
           </div>
         </div>
         <div class="prof-stats">
           <div class="pstat">
             <div class="pstat-lbl">TOTAL CLASSES</div>
-            <div class="pstat-val">06 <span class="dots blue-dots">●●●●●●</span></div>
+            <div class="pstat-val">06 <span class="dots blue-dots">&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;</span></div>
           </div>
           <div class="pstat">
             <div class="pstat-lbl">TOTAL STUDENTS</div>
@@ -133,12 +121,11 @@
           </div>
         </div>
         <div class="card-foot">
-          <a href="../prof dashboard/index.html"><button class="btn-view" onclick="viewDetails('Prof. Julian Thorne')">View Details</button></a>
-          <button class="btn-del" onclick="deleteProfessor(this, 'Prof. Julian Thorne')">🗑</button>
+          <a href="/Admin pages/prof dashboard/index.html"><button class="btn-view" type="button">View Details</button></a>
+          <button class="btn-del" type="button" onclick="deleteProfessor(this.closest('.prof-card'), null, 'Prof. Julian Thorne')">&#128465;</button>
         </div>
       </div>
 
-      <!-- Card 3 -->
       <div class="prof-card">
         <div class="prof-top">
           <div class="prof-av" style="background:linear-gradient(135deg,#3a2a4a,#5a3a6a)">SJ</div>
@@ -147,13 +134,13 @@
               <h3>Dr. Sarah Jenkins</h3>
               <span class="dept-badge sociology">SOCIOLOGY</span>
             </div>
-            <div class="email">✉ s.jenkins@university.edu</div>
+            <div class="email">&#9993; s.jenkins@university.edu</div>
           </div>
         </div>
         <div class="prof-stats">
           <div class="pstat">
             <div class="pstat-lbl">TOTAL CLASSES</div>
-            <div class="pstat-val">03 <span class="dots purple-dots">●●●</span></div>
+            <div class="pstat-val">03 <span class="dots purple-dots">&#9679;&#9679;&#9679;</span></div>
           </div>
           <div class="pstat">
             <div class="pstat-lbl">TOTAL STUDENTS</div>
@@ -161,12 +148,11 @@
           </div>
         </div>
         <div class="card-foot">
-          <a href="../prof dashboard/index.html"><button class="btn-view" onclick="viewDetails('Dr. Sarah Jenkins')">View Details</button></a>
-          <button class="btn-del" onclick="deleteProfessor(this, 'Dr. Sarah Jenkins')">🗑</button>
+          <a href="/Admin pages/prof dashboard/index.html"><button class="btn-view" type="button">View Details</button></a>
+          <button class="btn-del" type="button" onclick="deleteProfessor(this.closest('.prof-card'), null, 'Dr. Sarah Jenkins')">&#128465;</button>
         </div>
       </div>
 
-      <!-- Card 4 -->
       <div class="prof-card">
         <div class="prof-top">
           <div class="prof-av" style="background:linear-gradient(135deg,#1a2a4a,#2a3a6a)">MC</div>
@@ -175,13 +161,13 @@
               <h3>Dr. Michael Chen</h3>
               <span class="dept-badge economics">ECONOMICS</span>
             </div>
-            <div class="email">✉ m.chen@university.edu</div>
+            <div class="email">&#9993; m.chen@university.edu</div>
           </div>
         </div>
         <div class="prof-stats">
           <div class="pstat">
             <div class="pstat-lbl">TOTAL CLASSES</div>
-            <div class="pstat-val">05 <span class="dots blue-dots">●●●●●</span></div>
+            <div class="pstat-val">05 <span class="dots blue-dots">&#9679;&#9679;&#9679;&#9679;&#9679;</span></div>
           </div>
           <div class="pstat">
             <div class="pstat-lbl">TOTAL STUDENTS</div>
@@ -189,14 +175,56 @@
           </div>
         </div>
         <div class="card-foot">
-          <a href="../prof dashboard/index.html"><button class="btn-view" onclick="viewDetails('Dr. Michael Chen')">View Details</button></a>
-          <button class="btn-del" onclick="deleteProfessor(this, 'Dr. Michael Chen')">🗑</button>
+          <a href="/Admin pages/prof dashboard/index.html"><button class="btn-view" type="button">View Details</button></a>
+          <button class="btn-del" type="button" onclick="deleteProfessor(this.closest('.prof-card'), null, 'Dr. Michael Chen')">&#128465;</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script src="Admin Home.js"></script>
+<div class="modal-backdrop" id="addProfessorModal" aria-hidden="true">
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="addProfessorTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="addProfessorTitle">Add Professor</h2>
+        <p>Create a professor account without leaving this page.</p>
+      </div>
+      <button class="modal-close" type="button" id="closeAddProfessor" aria-label="Close add professor form">x</button>
+    </div>
+
+    <form class="prof-form" id="addProfessorForm" novalidate>
+      <div class="form-alert" id="profFormAlert" role="status" aria-live="polite"></div>
+
+      <label class="form-field">
+        <span>Full Name</span>
+        <input type="text" id="profName" name="profName" placeholder="Dr. Jane Smith" autocomplete="name" required>
+        <small class="field-error" id="profNameError"></small>
+      </label>
+
+      <label class="form-field">
+        <span>Email Address</span>
+        <input type="email" id="profEmail" name="profEmail" placeholder="name@university.edu" autocomplete="email" required>
+        <small class="field-error" id="profEmailError"></small>
+      </label>
+
+      <label class="form-field">
+        <span>Department</span>
+        <input type="text" id="profDept" name="profDept" placeholder="Computer Science">
+        <small class="field-error" id="profDeptError"></small>
+      </label>
+
+      <div class="form-actions">
+        <button class="btn-cancel" type="button" id="cancelAddProfessor">Cancel</button>
+        <button class="btn-submit" type="submit" id="submitAddProfessor">Add Professor</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="profToast" role="status" aria-live="polite"></div>
+
+<script src="/buzzmind-api.js"></script>
+<script src="/Admin pages/Home page/Admin Home.js"></script>
 </body>
 </html>

@@ -1,94 +1,73 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BuzzMind – The Fun Way to Learn and Play</title>
-    <link rel="stylesheet" href="Joined Students.css" />
-</head>
+    <link
+      rel="stylesheet"
+      href="/Student pages/Joined Students/Joined Students.css" />
+  </head>
 
-<body>
+  <body>
     <!-- ===== NAVBAR ===== -->
     <nav class="navbar">
-        <a href="../Settings page/Settings.html" class="logo">BuzzMind</a>
-        <ul class="nav-links">
-            <li><a href="../Home Page/Index.html" class="active">Discover</a></li>
-            <li><a href="../Libary/index.html">Library</a></li>
-            <li><a href="../reports_design/reports_page.html">Reports</a></li>
-        </ul>
-        <div class="nav-actions">
-            <div class="avatar"></div>
-        </div>
+      <a href="../Settings page/Settings.html" class="logo">BuzzMind</a>
+      <ul class="nav-links">
+        <li><a href="../Home Page/Index.html" class="active">Discover</a></li>
+        <li><a href="../Libary/index.html">Library</a></li>
+        <li><a href="../reports_design/reports_page.html">Reports</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="avatar"></div>
+      </div>
     </nav>
 
     <!-- ===== MAIN CONTENT =====-->
     <div class="wrap">
+      <div class="status-pill">WAITING FOR PLAYERS...</div>
 
-        <div class="status-pill">WAITING FOR PLAYERS...</div>
-
-        <div class="pin-card">
-            <div class="pin-label">GAME PIN</div>
-            <div class="pin-number">734 912</div>
-        </div>
-        <div class="content-container">
-            <div class="players-card">
-                <div class="players-header">
-                    <div class="players-title">
-                        Players Joined <span class="players-count">5</span>
-                    </div>
-                </div>
-
-                <div class="players-grid">
-                    <div class="player-chip">
-                        <div class="avatar" style="background:#c8b4f0;color:#5b3fcf">AL</div><span
-                            class="player-name">Alex</span>
-                    </div>
-                    <div class="player-chip">
-                        <div class="avatar" style="background:#b4d8f0;color:#1a6cbf">SA</div><span
-                            class="player-name">Sam</span>
-                    </div>
-                    <div class="player-chip">
-                        <div class="avatar" style="background:#f0c8d4;color:#bf1a4a">JA</div><span
-                            class="player-name">Jamie</span>
-                    </div>
-                    <div class="player-chip">
-                        <div class="avatar" style="background:#c8f0d4;color:#1abf5a">CA</div><span
-                            class="player-name">Casey</span>
-                    </div>
-                    <div class="player-chip">
-                        <div class="avatar" style="background:#f0e0b4;color:#bf8a1a">RI</div><span
-                            class="player-name">Riley</span>
-                    </div>
-                </div>
+      <div class="pin-card">
+        <div class="pin-label">GAME PIN</div>
+        <div class="pin-number">---</div>
+      </div>
+      <div class="content-container">
+        <div class="players-card">
+          <div class="players-header">
+            <div class="players-title">
+              Players Joined <span class="players-count">0</span>
             </div>
-            <div class="start-area">
-       
-<button class="start-btn" onclick="window.location.href='../../Quiz/student-quiz.html'">
-  START ▶
-</button>          
-                </div>
+          </div>
+
+          <div class="players-grid"></div>
         </div>
+        <div class="start-area">
+          <button
+            class="start-btn"
+            id="start-quiz-btn">
+            START ▶
+          </button>
+        </div>
+      </div>
     </div>
     <!-- ===== FOOTER ===== -->
     <footer class="footer">
-        <div class="footer-brand">
-            <a href="#" class="logo footer-logo">BuzzMind</a>
-            <p>
-                Empowering learners and educators through kinetic, high-energy play.
-            </p>
-        </div>
+      <div class="footer-brand">
+        <a href="#" class="logo footer-logo">BuzzMind</a>
+        <p>
+          Empowering learners and educators through kinetic, high-energy play.
+        </p>
+      </div>
     </footer>
 
     <div class="footer-bottom">
-        <span>© 2025 BuzzMind. All rights reserved.</span>
-        <div>
-            <a href="#">English</a>
-            <a href="#">Global</a>
-        </div>
+      <span>© 2025 BuzzMind. All rights reserved.</span>
+      <div>
+        <a href="#">English</a>
+        <a href="#">Global</a>
+      </div>
     </div>
-
-
+    <script src="/buzzmind-api.js"></script>
+  <script src="/Student pages/Joined Students/joined-lobby.js"></script>
 </body>
-
 </html>

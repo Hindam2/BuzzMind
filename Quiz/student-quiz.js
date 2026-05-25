@@ -20,7 +20,8 @@ const QUESTION_TIME = QUIZ_DATA.totalTime;
 const RING_CIRCUMFERENCE = 163.4;
 
 // ---- Start on page load ----
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.quizReady) await window.quizReady;
   loadQuestion(currentQuestionIndex);
 });
 
@@ -103,19 +104,32 @@ function renderAnswers(question) {
  * Handle the student selecting an answer.
  * @param {number} selectedIndex - which answer they clicked (0-3)
  */
-function handleAnswer(selectedIndex) {
-  // Prevent answering twice
+async function handleAnswer(selectedIndex) {
   if (answered) return;
   answered = true;
 
-  // Stop the timer
   clearInterval(timerInterval);
 
   const question = QUIZ_DATA.questions[currentQuestionIndex];
-  const isCorrect = selectedIndex === question.correctIndex;
+  let isCorrect = selectedIndex === question.correctIndex;
 
-  // Update score
-  if (isCorrect) score++;
+  if (window.LIVE_SESSION_ID && typeof BuzzMindAPI !== 'undefined') {
+    try {
+      const result = await BuzzMindAPI.submitAnswer(window.LIVE_SESSION_ID, {
+        playerId: sessionStorage.getItem('playerId'),
+        displayName: sessionStorage.getItem('playerName'),
+        answerIndex: selectedIndex,
+      });
+      isCorrect = result.correct;
+      question.correctIndex = result.correctIndex;
+      if (result.correct) score++;
+    } catch (err) {
+      console.error(err);
+      if (isCorrect) score++;
+    }
+  } else if (isCorrect) {
+    score++;
+  }
 
   // Visually mark correct and wrong answers
   revealAnswers(question.correctIndex, selectedIndex);

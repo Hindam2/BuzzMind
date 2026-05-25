@@ -21,7 +21,18 @@ const TOTAL_STUDENTS = SESSION_STUDENTS.length;
 const scores = SESSION_STUDENTS.map(s => ({ name: s.name, score: 0 }));
 
 // ---- Start on page load ----
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.quizReady) await window.quizReady;
+  if (window.LIVE_SESSION_ID && typeof BuzzMindAPI !== 'undefined') {
+    try {
+      const started = await BuzzMindAPI.startSession(window.LIVE_SESSION_ID);
+      if (typeof started.currentQuestionIndex === 'number') {
+        currentQuestionIndex = started.currentQuestionIndex;
+      }
+    } catch (err) {
+      console.error('Failed to start live session:', err);
+    }
+  }
   loadProfQuestion(currentQuestionIndex);
 });
 
@@ -113,8 +124,24 @@ function renderProfAnswers(question) {
  * Advance to the next question.
  * Called by the "Next Question" button.
  */
-function nextQuestion() {
+async function nextQuestion() {
   clearInterval(timerInterval);
+  if (window.LIVE_SESSION_ID && typeof BuzzMindAPI !== 'undefined') {
+    try {
+      const session = await BuzzMindAPI.nextQuestion(window.LIVE_SESSION_ID);
+      if (session.finished) {
+        endQuiz();
+        return;
+      }
+      if (typeof session.currentQuestionIndex === 'number') {
+        currentQuestionIndex = session.currentQuestionIndex;
+        loadProfQuestion(currentQuestionIndex);
+        return;
+      }
+    } catch (err) {
+      console.error('Failed to advance live session:', err);
+    }
+  }
   currentQuestionIndex++;
   if (currentQuestionIndex < QUIZ_DATA.questions.length) {
     loadProfQuestion(currentQuestionIndex);
@@ -125,8 +152,15 @@ function nextQuestion() {
  * End the quiz — show a simple end state.
  */
 // REPLACE WITH THIS:
-function endQuiz() {
+async function endQuiz() {
   clearInterval(timerInterval);
+  if (window.LIVE_SESSION_ID && typeof BuzzMindAPI !== 'undefined') {
+    try {
+      await BuzzMindAPI.endSession(window.LIVE_SESSION_ID);
+    } catch (err) {
+      console.error('Failed to end live session:', err);
+    }
+  }
 
   // Save final scores to sessionStorage so leaderboard.html can read them
   const sorted = [...scores].sort((a, b) => b.score - a.score);

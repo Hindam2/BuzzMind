@@ -4,28 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BuzzMind – Professor View</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="quiz.css" />
-    <link rel="stylesheet" href="professor-quiz.css" />
+    <link rel="stylesheet" href="/Quiz/style.css" />
+    <link rel="stylesheet" href="/Quiz/quiz.css" />
+    <link rel="stylesheet" href="/Quiz/professor-quiz.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=DM+Sans:wght@400;500&display=swap"
       rel="stylesheet" />
   </head>
   <body>
-
     <main class="prof-main">
-
       <!-- Left: question display + answer breakdown -->
       <section class="prof-question-panel">
         <!-- Question badge + text -->
         <div class="prof-question-header">
-          <span class="question-badge" id="profQuestionBadge">QUESTION 1 OF 10</span>
-          <h2 class="prof-question-text" id="profQuestionText">Waiting to start...</h2>
+          <span class="question-badge" id="profQuestionBadge"
+            >QUESTION 1 OF 10</span
+          >
+          <h2 class="prof-question-text" id="profQuestionText">
+            Waiting to start...
+          </h2>
         </div>
 
         <!-- Optional image -->
-        <div id="profImageWrapper" style="display:none;">
-          <img id="profQuestionImage" src="" alt="Question image" class="question-img" />
+        <div id="profImageWrapper" style="display: none">
+          <img
+            id="profQuestionImage"
+            src=""
+            alt="Question image"
+            class="question-img" />
         </div>
 
         <!-- Answer options (display only, no clicking for professor) -->
@@ -36,13 +42,15 @@
 
       <!-- Right: live stats panel -->
       <aside class="prof-stats-panel">
-
         <!-- Submitted count -->
         <div class="stat-card">
           <p class="stat-label">ANSWERS SUBMITTED</p>
           <p class="stat-value" id="submittedCount">0 / 0</p>
           <div class="stat-bar-bg">
-            <div class="stat-bar-fill" id="submittedBar" style="width:0%"></div>
+            <div
+              class="stat-bar-fill"
+              id="submittedBar"
+              style="width: 0%"></div>
           </div>
         </div>
 
@@ -54,10 +62,18 @@
 
         <!-- Controls -->
         <div class="prof-controls">
-          <button class="btn-next" id="nextBtn" onclick="nextQuestion()" style="color:brown">
+          <button
+            class="btn-next"
+            id="nextBtn"
+            onclick="nextQuestion()"
+            style="color: brown">
             Next Question ▶
           </button>
-          <button class="btn-end" id="endBtn" onclick="endQuiz()" style="display:none;">
+          <button
+            class="btn-end"
+            id="endBtn"
+            onclick="endQuiz()"
+            style="display: none">
             End Quiz
           </button>
         </div>
@@ -69,11 +85,12 @@
             <!-- Filled by JS -->
           </ol>
         </div>
-
       </aside>
     </main>
 
-    <script src="quiz-data.js"></script>
-    <script src="professor-quiz.js"></script>
+    <script src="/buzzmind-api.js"></script>
+    <script src="/Quiz/quiz-data.js"></script>
+    <script src="/Quiz/session-loader.js"></script>
+    <script src="/Quiz/professor-quiz.js"></script>
   </body>
 </html>

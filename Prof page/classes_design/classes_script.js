@@ -1,33 +1,28 @@
-// ── Student data ──
-const students = [
-  { id: 1, name: 'Alex "Neutron" Rivera', email: 'alex.rivera@buzzmind.com', grade: 94, participation: 4, emoji: '🧑‍🚀' },
-  { id: 2, name: 'Luna Stark', email: 'luna.stark@buzzmind.com', grade: 89, participation: 3, emoji: '👩‍🔬' },
-  { id: 3, name: 'Jordan "Flash" Wu', email: 'jordan.wu@buzzmind.com', grade: 72, participation: 2, emoji: '🧑‍💻' },
-  { id: 4, name: 'Zara "Electron" Vance', email: 'zara.vance@buzzmind.com', grade: 91, participation: 4, emoji: '👩‍🎓' },
-];
-
+let students = [];
 let editingId = null;
+let classId = null;
 
-// ── Email validation ──
+function getClassIdFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('classId');
+}
+
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// ── Name validation ──
 function isValidName(name) {
   return /^[a-zA-Z\s\-']{2,}$/.test(name);
 }
 
-// ── Error helpers ──
 function showError(id, message) {
   document.querySelector(id).textContent = message;
 }
 
 function clearErrors(...ids) {
-  ids.forEach(id => document.querySelector(id).textContent = '');
+  ids.forEach((id) => (document.querySelector(id).textContent = ''));
 }
 
-// ── Helpers ──
 function gradeClass(g) {
   if (g >= 85) return 'grade-high';
   if (g >= 70) return 'grade-mid';
@@ -43,14 +38,23 @@ function participationBars(count) {
   return `<div class="participation-bars">${bars}</div>`;
 }
 
-// ── Render ──
+function mapStudent(s) {
+  return {
+    id: s._id,
+    name: s.name,
+    email: s.email,
+    grade: s.grade,
+    participation: s.participation,
+    emoji: s.emoji || '🧑‍🎓',
+  };
+}
+
 function renderRoster(list) {
   const tbody = document.querySelector('#roster-body');
   tbody.innerHTML = '';
 
-  list.forEach(s => {
+  list.forEach((s) => {
     const tr = document.createElement('tr');
-
     tr.innerHTML = `
       <td>
         <div class="student-info">
@@ -67,39 +71,64 @@ function renderRoster(list) {
         <div class="action-btns">
           <button class="btn-delete" data-id="${s.id}">🗑️</button>
         </div>
-      </td>
-    `;
-
+      </td>`;
     tbody.appendChild(tr);
   });
 
   document.querySelector('#roster-count').textContent =
     `SHOWING ${list.length} OF ${students.length} STUDENTS`;
 
-  document.querySelectorAll('.btn-edit').forEach(btn => {
-    btn.addEventListener('click', () => openEditModal(+btn.dataset.id));
-  });
-
-  document.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = +btn.dataset.id;
-      const idx = students.findIndex(s => s.id === id);
-      students.splice(idx, 1);
+  document.querySelectorAll('.btn-delete').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      if (classId && typeof BuzzMindAPI !== 'undefined') {
+        try {
+          const cls = await BuzzMindAPI.deleteStudent(classId, id);
+          students = cls.students.map(mapStudent);
+        } catch (err) {
+          alert(err.message);
+          return;
+        }
+      } else {
+        students = students.filter((s) => s.id !== id);
+      }
       renderRoster(students);
     });
   });
 }
 
-// ── Search ──
-document.querySelector('#search-input').addEventListener('input', (e) => {
+async function loadClassRoster() {
+  classId = getClassIdFromUrl();
+  if (!classId || typeof BuzzMindAPI === 'undefined') {
+    students = [
+      { id: '1', name: 'Alex "Neutron" Rivera', email: 'alex.rivera@buzzmind.com', grade: 94, participation: 4, emoji: '🧑‍🚀' },
+      { id: '2', name: 'Luna Stark', email: 'luna.stark@buzzmind.com', grade: 89, participation: 3, emoji: '👩‍🔬' },
+    ];
+    renderRoster(students);
+    return;
+  }
+
+  try {
+    const cls = await BuzzMindAPI.getClass(classId);
+    students = cls.students.map(mapStudent);
+    const title = document.querySelector('.page-title, h1, .class-title');
+    if (title) title.textContent = cls.name;
+    renderRoster(students);
+  } catch (err) {
+    console.error(err);
+    renderRoster([]);
+  }
+}
+
+document.querySelector('#search-input')?.addEventListener('input', (e) => {
   const q = e.target.value.toLowerCase();
-  renderRoster(students.filter(s =>
-    s.name.toLowerCase().includes(q) ||
-    s.email.toLowerCase().includes(q)
-  ));
+  renderRoster(
+    students.filter(
+      (s) => s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q),
+    ),
+  );
 });
 
-// ── Add Modal ──
 const addModal = document.querySelector('#add-modal');
 
 document.querySelector('#add-student-btn').onclick = () => {
@@ -110,7 +139,7 @@ document.querySelector('#cancel-add').onclick = () => {
   addModal.style.display = 'none';
 };
 
-document.querySelector('#confirm-add').onclick = () => {
+document.querySelector('#confirm-add').onclick = async () => {
   const name = document.querySelector('#new-name').value.trim();
   const email = document.querySelector('#new-email').value.trim();
 
@@ -120,58 +149,40 @@ document.querySelector('#confirm-add').onclick = () => {
     showError('#add-name-error', 'Invalid name');
     return;
   }
-
   if (!isValidEmail(email)) {
     showError('#add-email-error', 'Invalid email');
     return;
   }
 
-  students.push({
-    id: Date.now(),
-    name,
-    email,
-    grade: 80,
-    participation: 3,
-    emoji: '🧑‍🎓'
-  });
+  if (classId && typeof BuzzMindAPI !== 'undefined') {
+    try {
+      const cls = await BuzzMindAPI.addStudent(classId, { name, email });
+      students = cls.students.map(mapStudent);
+    } catch (err) {
+      showError('#add-email-error', err.message);
+      return;
+    }
+  } else {
+    students.push({
+      id: String(Date.now()),
+      name,
+      email,
+      grade: 80,
+      participation: 3,
+      emoji: '🧑‍🎓',
+    });
+  }
 
   addModal.style.display = 'none';
+  document.querySelector('#new-name').value = '';
+  document.querySelector('#new-email').value = '';
   renderRoster(students);
 };
 
-// ── Edit Modal ──
-const editModal = document.querySelector('#edit-modal');
-
-function openEditModal(id) {
-  const s = students.find(x => x.id === id);
-  editingId = id;
-
-  document.querySelector('#edit-name').value = s.name;
-  document.querySelector('#edit-email').value = s.email;
-
-  editModal.style.display = 'flex';
-}
-
-document.querySelector('#confirm-edit').onclick = () => {
-  const s = students.find(x => x.id === editingId);
-
-  s.name = document.querySelector('#edit-name').value;
-  s.email = document.querySelector('#edit-email').value;
-
-  editModal.style.display = 'none';
-  renderRoster(students);
-};
-
-document.querySelector('#cancel-edit').onclick = () => {
-  editModal.style.display = 'none';
-};
-
-// ── Close modals ──
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.onclick = e => {
+document.querySelectorAll('.modal-overlay').forEach((m) => {
+  m.onclick = (e) => {
     if (e.target === m) m.style.display = 'none';
   };
 });
 
-// ── Init ──
-renderRoster(students);
+document.addEventListener('DOMContentLoaded', loadClassRoster);

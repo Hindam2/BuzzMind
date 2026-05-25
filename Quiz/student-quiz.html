@@ -4,21 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BuzzMind – Quiz</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="stylesheet" href="quiz.css" />
+    <link rel="stylesheet" href="/Quiz/style.css" />
+    <link rel="stylesheet" href="/Quiz/quiz.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&family=DM+Sans:wght@400;500&display=swap"
       rel="stylesheet" />
   </head>
   <body>
-
     <!-- ===== QUIZ AREA ===== -->
     <main class="quiz-main" id="quizArea">
-
       <!-- Question header: number + timer -->
       <div class="question-header">
         <div class="question-header-left">
-          <span class="question-badge" id="questionBadge">QUESTION 1 OF 10</span>
+          <span class="question-badge" id="questionBadge"
+            >QUESTION 1 OF 10</span
+          >
           <h2 class="question-text" id="questionText">Loading question...</h2>
         </div>
         <!-- Countdown timer (circular, like image 10) -->
@@ -33,8 +33,15 @@
       </div>
 
       <!-- Optional question image -->
-      <div class="question-image-wrapper" id="questionImageWrapper" style="display:none;">
-        <img id="questionImage" src="" alt="Question image" class="question-img" />
+      <div
+        class="question-image-wrapper"
+        id="questionImageWrapper"
+        style="display: none">
+        <img
+          id="questionImage"
+          src=""
+          alt="Question image"
+          class="question-img" />
       </div>
 
       <!-- Answer choices (4 colored tiles like image 10) -->
@@ -43,23 +50,31 @@
       </div>
 
       <!-- Feedback banner (shown after answering) -->
-      <div class="feedback-banner" id="feedbackBanner" style="display:none;">
+      <div class="feedback-banner" id="feedbackBanner" style="display: none">
         <span id="feedbackIcon"></span>
         <span id="feedbackText"></span>
       </div>
     </main>
 
     <!-- ===== RESULTS SCREEN (shown after all questions) ===== -->
-    <section class="results-screen" id="resultsScreen" style="display:none;">
+    <section class="results-screen" id="resultsScreen" style="display: none">
       <div class="results-card">
         <div class="results-emoji">🏆</div>
         <h2 class="results-title">Quiz Complete!</h2>
-        <p class="results-score" id="resultsScore">You got <strong>0 / 0</strong> correct!</p>
-        <button class="btn-join" onclick="window.location.href='leaderboard.html'">Back to Home</button>
+        <p class="results-score" id="resultsScore">
+          You got <strong>0 / 0</strong> correct!
+        </p>
+        <button
+          class="btn-join"
+          onclick="window.location.href = 'leaderboard.html'">
+          Back to Home
+        </button>
       </div>
     </section>
 
-    <script src="quiz-data.js"></script>
-    <script src="student-quiz.js"></script>
+    <script src="/buzzmind-api.js"></script>
+    <script src="/Quiz/quiz-data.js"></script>
+    <script src="/Quiz/session-loader.js"></script>
+    <script src="/Quiz/student-quiz.js"></script>
   </body>
 </html>

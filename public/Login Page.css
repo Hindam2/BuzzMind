@@ -139,6 +139,39 @@ ul {
     margin-bottom: 24px;
 }
 
+.toggle {
+    display: flex;
+    margin-bottom: 24px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #ede8fc;
+}
+
+.toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b639a;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.toggle-btn.active {
+    background: #5c2dd5;
+    color: #fff;
+}
+
+.form-container {
+    display: none;
+}
+
+.form-container:first-of-type {
+    display: block;
+}
+
 h1 {
     font-size: 1.6rem;
     font-weight: 700;

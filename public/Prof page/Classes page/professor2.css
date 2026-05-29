@@ -50,10 +50,13 @@ ul {
   padding-left: 0.3rem;
 }
 .prof-row {
-  display: flex;
+    color: #5b21b6;
   align-items: center;
   gap: 0.7rem;
   padding: 0 0.3rem;
+}
+.pf-g {
+  background: #7c3aed;
   margin-bottom: 1.5rem;
 }
 .prof-av {
@@ -92,9 +95,9 @@ ul {
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  padding: 0.58rem 0.85rem;
-  border-radius: 10px;
-  font-size: 0.875rem;
+.si-g {
+  background: #ede9fe;
+}
   font-weight: 600;
   color: #6b7280;
   transition:

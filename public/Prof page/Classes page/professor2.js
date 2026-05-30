@@ -1,13 +1,11 @@
-
 // ---------- Search ----------
 document.getElementById('searchInput').addEventListener('input', function () {
   const q = this.value.toLowerCase();
-  document.querySelectorAll('.cc').forEach(card => {
+  document.querySelectorAll('.cc').forEach((card) => {
     const name = card.querySelector('h3').textContent.toLowerCase();
     card.style.display = name.includes(q) ? '' : 'none';
   });
 });
-
 
 // ---------- Add New Class ----------
 function openClassModal() {
@@ -56,7 +54,13 @@ async function createClassFromModal() {
     }
   }
 
-  appendClassCard({ name, schedule: 'Schedule TBD', level: 'LEVEL 100', progress: 0, students: [] });
+  appendClassCard({
+    name,
+    schedule: 'Schedule TBD',
+    level: 'LEVEL 100',
+    progress: 0,
+    students: [],
+  });
   closeClassModal();
 }
 
@@ -85,7 +89,8 @@ function appendClassCard(cls) {
   const classId = cls._id || '';
   const manageHref = buildManageHref(classId);
 
-  card.style.cssText = 'opacity:0;transform:translateY(20px);transition:opacity 0.4s,transform 0.4s';
+  card.style.cssText =
+    'opacity:0;transform:translateY(20px);transition:opacity 0.4s,transform 0.4s';
 
   card.innerHTML = `
     <div class="ct" style="background:linear-gradient(135deg,#0f2027,#203a43)">
@@ -107,7 +112,8 @@ function appendClassCard(cls) {
     </div>`;
 
   const pbar = card.querySelector('.pbar');
-  if (pbar) pbar.innerHTML = `<div class="pf pf-g" style="width:${progress}%"></div>`;
+  if (pbar)
+    pbar.innerHTML = `<div class="pf pf-g" style="width:${progress}%"></div>`;
   card.querySelector('.delete-class-btn')?.addEventListener('click', () => {
     deleteClassCard(card, cls);
   });
@@ -166,10 +172,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('class-modal')?.addEventListener('click', (event) => {
     if (event.target.id === 'class-modal') closeClassModal();
   });
-  document.getElementById('class-name-input')?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') createClassFromModal();
-    if (event.key === 'Escape') closeClassModal();
-  });
+  document
+    .getElementById('class-name-input')
+    ?.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') createClassFromModal();
+      if (event.key === 'Escape') closeClassModal();
+    });
 
   if (typeof BuzzMindAPI !== 'undefined') {
     try {
@@ -187,15 +195,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     el.style.transform = 'translateY(18px)';
     el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
 
-    const watcher = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
-        setTimeout(() => {
-          el.style.opacity = '1';
-          el.style.transform = 'translateY(0)';
-        }, i * 80);
-        watcher.unobserve(el);
-      }
-    }, { threshold: 0.1 });
+    const watcher = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setTimeout(() => {
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+          }, i * 80);
+          watcher.unobserve(el);
+        }
+      },
+      { threshold: 0.1 },
+    );
 
     watcher.observe(el);
   });

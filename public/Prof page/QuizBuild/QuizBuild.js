@@ -10,9 +10,9 @@ function showToast(message, type = 'error') {
   if (existing) existing.remove();
 
   const colors = {
-    error:   { bg:'#fef2f2', border:'#fca5a5', text:'#991b1b' },
-    success: { bg:'#f0fdf4', border:'#86efac', text:'#14532d' },
-    warn:    { bg:'#fefce8', border:'#fde047', text:'#92400e' },
+    error: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b' },
+    success: { bg: '#f0fdf4', border: '#86efac', text: '#14532d' },
+    warn: { bg: '#fefce8', border: '#fde047', text: '#92400e' },
   };
   const c = colors[type] || colors.error;
 
@@ -86,15 +86,20 @@ function showConfirm(message, onConfirm) {
     setTimeout(() => overlay.remove(), 200);
   };
 
-  dialog.querySelector('#dlg-cancel').onclick  = close;
-  dialog.querySelector('#dlg-confirm').onclick = () => { close(); onConfirm(); };
-  overlay.onclick = (e) => { if (e.target === overlay) close(); };
+  dialog.querySelector('#dlg-cancel').onclick = close;
+  dialog.querySelector('#dlg-confirm').onclick = () => {
+    close();
+    onConfirm();
+  };
+  overlay.onclick = (e) => {
+    if (e.target === overlay) close();
+  };
 }
 
 /* ══ SELECT ANSWER ══ */
 function selectAnswer(btn) {
   const block = btn.closest('.question-block');
-  block.querySelectorAll('.choice-radio').forEach(r => {
+  block.querySelectorAll('.choice-radio').forEach((r) => {
     r.classList.remove('correct');
     r.textContent = '';
     r.closest('.choice').classList.remove('selected');
@@ -125,7 +130,7 @@ function activateQuestion(id) {
 
   const num = block.querySelector('.q-num').textContent;
   block.classList.remove('empty-block');
-    block.innerHTML = `
+  block.innerHTML = `
     <div class="q-header">
       <div class="q-num">${num}</div>
       <div class="q-actions">
@@ -171,13 +176,14 @@ function activateQuestion(id) {
 function addEmptyBlock() {
   questionCount++;
   const num = String(questionCount).padStart(2, '0');
-  const id  = 'q' + questionCount;
+  const id = 'q' + questionCount;
 
   const container = document.getElementById('questionsContainer');
   const block = document.createElement('div');
   block.className = 'question-block empty-block';
   block.id = id;
-  block.style.cssText = 'opacity:0;transform:translateY(20px);transition:opacity 0.4s,transform 0.4s';
+  block.style.cssText =
+    'opacity:0;transform:translateY(20px);transition:opacity 0.4s,transform 0.4s';
   block.innerHTML = `
     <div class="q-header">
       <div class="q-num muted">${num}</div>
@@ -193,7 +199,10 @@ function addEmptyBlock() {
     </div>`;
 
   container.appendChild(block);
-  setTimeout(() => { block.style.opacity='1'; block.style.transform='translateY(0)'; }, 50);
+  setTimeout(() => {
+    block.style.opacity = '1';
+    block.style.transform = 'translateY(0)';
+  }, 50);
 }
 
 /* ══ ADD SEGMENT ══ */
@@ -203,7 +212,9 @@ function addSegment() {
   seg.className = 'seg active-seg';
   seg.style.cssText = 'opacity:0;transition:opacity 0.3s';
   bar.insertBefore(seg, bar.querySelector('.add-seg-btn'));
-  setTimeout(() => { seg.style.opacity = '1'; }, 50);
+  setTimeout(() => {
+    seg.style.opacity = '1';
+  }, 50);
 }
 
 /* ══ COLLECT QUIZ DATA ══ */
@@ -211,25 +222,34 @@ function collectQuizPayload() {
   const title = document.getElementById('quizTitle').value.trim();
   const questions = [];
 
-  document.querySelectorAll('.question-block:not(.empty-block)').forEach((block) => {
-    const text = block.querySelector('.q-input')?.value.trim();
-    if (!text) return;
+  document
+    .querySelectorAll('.question-block:not(.empty-block)')
+    .forEach((block) => {
+      const text = block.querySelector('.q-input')?.value.trim();
+      if (!text) return;
 
-    const choices = block.querySelectorAll('.choice');
-    const answers = [];
-    let correctIndex = 0;
-    choices.forEach((choice, i) => {
-      answers.push(choice.querySelector('.choice-input')?.value.trim() || '');
-      if (choice.querySelector('.choice-radio.correct')) correctIndex = i;
+      const choices = block.querySelectorAll('.choice');
+      const answers = [];
+      let correctIndex = 0;
+      choices.forEach((choice, i) => {
+        answers.push(choice.querySelector('.choice-input')?.value.trim() || '');
+        if (choice.querySelector('.choice-radio.correct')) correctIndex = i;
+      });
+
+      const imageUrl =
+        block.dataset.imageUrl ||
+        block.querySelector('.q-image-preview')?.src ||
+        null;
+      questions.push({
+        text,
+        imageUrl: imageUrl || null,
+        answers,
+        correctIndex,
+      });
     });
-
-    const imageUrl = block.dataset.imageUrl || (block.querySelector('.q-image-preview')?.src || null);
-    questions.push({ text, imageUrl: imageUrl || null, answers, correctIndex });
-  });
 
   return { title, questions, totalTime: 20 };
 }
-
 
 /* ══ IMAGE UPLOAD HANDLERS ══ */
 async function handleImageChange(input, id) {
@@ -270,7 +290,10 @@ function removeImage(id) {
   if (!block) return;
   delete block.dataset.imageUrl;
   const img = block.querySelector('.q-image-preview');
-  if (img) { img.src = ''; img.style.display = 'none'; }
+  if (img) {
+    img.src = '';
+    img.style.display = 'none';
+  }
   const fileInput = block.querySelector('input[type="file"]');
   if (fileInput) fileInput.value = '';
   const rm = block.querySelector('.btn-remove-image');
@@ -319,9 +342,9 @@ async function launchQuiz() {
 function discardDraft() {
   showConfirm('Discard this draft? All changes will be lost.', () => {
     document.getElementById('quizTitle').value = '';
-    document.querySelectorAll('.q-input').forEach(q => q.value = '');
-    document.querySelectorAll('.choice-input').forEach(c => c.value = '');
-    document.querySelectorAll('.choice-radio.correct').forEach(r => {
+    document.querySelectorAll('.q-input').forEach((q) => (q.value = ''));
+    document.querySelectorAll('.choice-input').forEach((c) => (c.value = ''));
+    document.querySelectorAll('.choice-radio.correct').forEach((r) => {
       r.classList.remove('correct');
       r.textContent = '';
       r.closest('.choice').classList.remove('selected');

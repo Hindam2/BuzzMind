@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library - BuzzMind</title>
+
+    <link rel="stylesheet" href="/Student pages/Libary/style.css" />
+    <link rel="stylesheet" href="/Student pages/Home Page/style.css" />
+  </head>
+
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <a href="#" class="logo">BuzzMind</a>
+
+      <ul class="nav-links">
+        <li><a href="/Student pages/Home Page/Index.html">Discover</a></li>
+        <li><a href="#" class="active">Library</a></li>
+        <li>
+          <a href="/Student pages/reports_design/reports_page.html">Reports</a>
+        </li>
+      </ul>
+
+      <div class="nav-actions">
+        <div class="avatar">
+          <a href="/Student pages/Settings page/Settings.html">
+            <img src="https://i.pravatar.cc/150?u=user123" alt="User" />
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="content-wrapper">
+      <!-- HEADER -->
+      <header class="library-header">
+        <p class="subtitle">YOUR COLLECTION</p>
+        <h1>Library</h1>
+
+        <!-- SEARCH -->
+        <div class="search-container">
+          <input
+            type="text"
+            placeholder="Search your quizzes..."
+            id="quizSearch" />
+          <span class="search-icon">🔍</span>
+        </div>
+      </header>
+
+      <!-- MY QUIZZES -->
+      <section class="quiz-section">
+        <div class="section-header">
+          <h2>📁 My Quizzes</h2>
+        </div>
+
+        <div class="quiz-grid" id="myQuizzes"></div>
+      </section>
+
+      <!-- SHARED -->
+      <section class="quiz-section">
+        <div class="section-header">
+          <h2>👥 Shared with Me</h2>
+        </div>
+
+        <div class="shared-list"></div>
+      </section>
+    </main>
+
+    <script src="/buzzmind-api.js"></script>
+    <script src="/Student pages/Libary/Script.js"></script>
+  </body>
+</html>

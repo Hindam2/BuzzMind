@@ -5,7 +5,7 @@ const classStudentSchema = new mongoose.Schema({
   email: { type: String, required: true, trim: true, lowercase: true },
   grade: { type: Number, default: 80, min: 0, max: 100 },
   participation: { type: Number, default: 3, min: 0, max: 4 },
-  emoji: { type: String, default: '🧑‍🎓' },
+  emoji: { type: String, default: '' },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 });
 

@@ -8,11 +8,11 @@
    ============================================= */
 
 // ---- State ----
-let currentQuestionIndex = 0;  // which question we're on
-let score = 0;                  // how many correct answers
-let timerInterval = null;       // reference to the countdown interval
-let timeLeft = 0;               // seconds remaining for current question
-let answered = false;           // has the student answered yet?
+let currentQuestionIndex = 0; // which question we're on
+let score = 0; // how many correct answers
+let timerInterval = null; // reference to the countdown interval
+let timeLeft = 0; // seconds remaining for current question
+let answered = false; // has the student answered yet?
 
 // Total time per question (from quiz-data.js)
 const QUESTION_TIME = QUIZ_DATA.totalTime;
@@ -197,7 +197,10 @@ function showFeedback(isCorrect) {
 
   banner.className = `feedback-banner ${isCorrect ? 'correct' : 'incorrect'}`;
   safeSetText(icon, '');
-  safeSetText(text, isCorrect ? 'Correct! Great job!' : 'Not quite — keep going!');
+  safeSetText(
+    text,
+    isCorrect ? 'Correct! Great job!' : 'Not quite — keep going!',
+  );
   banner.style.display = 'flex';
 }
 
@@ -219,7 +222,10 @@ function startTimer(seconds) {
       // Time's up — treat as wrong answer if not answered
       if (!answered) {
         answered = true;
-        revealAnswers(QUIZ_DATA.questions[currentQuestionIndex].correctIndex, -1);
+        revealAnswers(
+          QUIZ_DATA.questions[currentQuestionIndex].correctIndex,
+          -1,
+        );
         showFeedback(false);
         setTimeout(() => {
           currentQuestionIndex++;
@@ -278,17 +284,17 @@ function showResults() {
 
   sessionStorage.setItem('finalScore', score);
   sessionStorage.setItem('totalQuestions', total);
-  sessionStorage.setItem('playerName', sessionStorage.getItem('playerName') || 'Student');
+  sessionStorage.setItem(
+    'playerName',
+    sessionStorage.getItem('playerName') || 'Student',
+  );
 
   if (quizArea) quizArea.style.display = 'none';
   if (resultsScreen) {
     resultsScreen.style.display = 'flex';
     const resultsScore = document.getElementById('resultsScore');
     if (resultsScore) {
-      safeSetText(
-        resultsScore,
-        `You got ${score} / ${total} correct!`,
-      );
+      safeSetText(resultsScore, `You got ${score} / ${total} correct!`);
     }
   }
 

@@ -1,4 +1,3 @@
-
 const User = require('../models/User');
 const { hashPassword, verifyPassword } = require('../utils/password');
 
@@ -53,25 +52,49 @@ function redirectWithSession(req, res, target) {
 
 async function registerUser(req, res) {
   try {
-    const { Name, Username, Password, Email } = req.body;
+    const { Name, Username, Password, Email, preferredRole } = req.body;
     const existingUser = await User.findOne({
       $or: [{ Email }, { Username }],
     });
 
     if (existingUser) {
-      return res.redirect('/?error=user_exists');
+      // Determine which field is already taken so we can show a specific message
+      if (existingUser.Email === Email) {
+        return res.redirect('/login?error=email_exists');
+      }
+      if (existingUser.Username === Username) {
+        return res.redirect('/login?error=username_exists');
+      }
+      return res.redirect('/login?error=user_exists');
     }
 
     const hashedPassword = await hashPassword(Password);
-    const user = await User.create({
+    const userData = {
       Name,
       Username,
       Password: hashedPassword,
       Email,
-    });
+    };
+
+    // If the signup came with a preferred role (from ?role=...), apply it if valid
+    if (
+      preferredRole &&
+      ['professor', 'student', 'admin'].includes(preferredRole)
+    ) {
+      userData.Role = preferredRole;
+    }
+
+    const user = await User.create(userData);
 
     req.session.userId = user._id.toString();
     req.session.role = user.Role;
+
+    if (user.Role === 'professor')
+      return redirectWithSession(req, res, '/professor');
+    if (user.Role === 'student')
+      return redirectWithSession(req, res, '/student');
+    if (user.Role === 'admin') return redirectWithSession(req, res, '/admin');
+
     redirectWithSession(req, res, '/role');
   } catch (error) {
     console.error('Error saving data:', error);
@@ -86,8 +109,13 @@ async function loginUser(req, res) {
       $or: [{ Email: emailOrUsername }, { Username: emailOrUsername }],
     });
 
-    if (!user || !(await verifyPassword(password, user.Password))) {
-      return res.redirect('/?error=invalid_credentials');
+    if (!user) {
+      return res.redirect('/login?error=user_not_found');
+    }
+
+    const passwordMatches = await verifyPassword(password, user.Password);
+    if (!passwordMatches) {
+      return res.redirect('/login?error=wrong_password');
     }
 
     if (!user.Password.startsWith('$2')) {

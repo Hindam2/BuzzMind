@@ -10,7 +10,7 @@ async function main() {
 
   if (!username || !email || !password) {
     console.error(
-      'Usage: node Backend/scripts/create-admin.js <username> <email> <password> [name]',
+      'Usage: node scripts/create-admin.js <username> <email> <password> [name]',
     );
     process.exit(1);
   }

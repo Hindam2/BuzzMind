@@ -61,6 +61,18 @@ async function createClassFromModal() {
 }
 
 window.addNewClass = openClassModal;
+function buildManageHref(classId = '') {
+  const basePath = '/Prof page/classes_design/classes_page.html';
+  if (!classId) return basePath;
+  const query = new URLSearchParams({ classId: String(classId) }).toString();
+  return `${basePath}?${query}`;
+}
+
+function manage(_className, classId = '') {
+  window.location.href = buildManageHref(classId);
+}
+
+window.manage = manage;
 
 function appendClassCard(cls) {
   const grid = document.getElementById('cgrid');
@@ -71,9 +83,7 @@ function appendClassCard(cls) {
   const count = cls.students?.length || 0;
   const progress = cls.progress || 0;
   const classId = cls._id || '';
-  const manageHref = classId
-    ? `/Prof page/classes_design/classes_page.html?classId=${classId}`
-    : '/Prof page/classes_design/classes_page.html';
+  const manageHref = buildManageHref(classId);
 
   card.style.cssText = 'opacity:0;transform:translateY(20px);transition:opacity 0.4s,transform 0.4s';
 
@@ -88,10 +98,10 @@ function appendClassCard(cls) {
       <div class="pr"><span class="pl">COURSE PROGRESS</span><span class="pp">${progress}%</span></div>
       <div class="pbar"><div class="pf pf-g" style="width:${progress}%"></div></div>
       <div class="cf">
-        <span class="stc">👥 ${count} Students</span>
+        <span class="stc">${count} Students</span>
         <div class="class-actions">
           <button class="delete-class-btn" type="button">Delete</button>
-          <a href="${manageHref}"><button class="mbtn" type="button">Manage</button></a>
+          <button class=\"mbtn manage-class-btn\" type=\"button\">Manage</button>
         </div>
       </div>
     </div>`;
@@ -100,6 +110,9 @@ function appendClassCard(cls) {
   if (pbar) pbar.innerHTML = `<div class="pf pf-g" style="width:${progress}%"></div>`;
   card.querySelector('.delete-class-btn')?.addEventListener('click', () => {
     deleteClassCard(card, cls);
+  });
+  card.querySelector('.manage-class-btn')?.addEventListener('click', () => {
+    window.location.href = manageHref;
   });
 
   grid.appendChild(card);

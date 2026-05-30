@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuzzMind Professor Settings</title>
+  <link rel="stylesheet" href="/Student pages/Home Page/style.css" />
+  <link rel="stylesheet" href="/Prof page/Settings page/SettingsP.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/Prof page/Classes page/professor2.html" class="logo">BuzzMind</a>
+    <ul class="nav-links">
+      <li><a href="/Prof page/Classes page/professor2.html">Classes</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="#" class="avatar">M</a>
+    </div>
+  </nav>
+
+  <div class="settings-page">
+    <div class="settings-header">
+      <h1>Settings</h1>
+      <p>Manage your account</p>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-avatar">
+        <span>U</span>
+      </div>
+      <div class="profile-info">
+        <h2>Your Name</h2>
+      </div>
+    </div>
+
+    <div class="settings-card">
+      <div class="card-title">
+        <div class="card-icon purple-icon">Account</div>
+        <h3>Account Settings</h3>
+      </div>
+      <hr />
+      <div class="form-row">
+        <div class="form-group">
+          <label>DISPLAY NAME</label>
+          <input type="text" id="displayName" placeholder="Enter Your Name" />
+        </div>
+        <div class="form-group">
+          <label>EMAIL ADDRESS</label>
+          <input type="email" id="emailAddress" placeholder="Enter Your Email" />
+        </div>
+        <div class="form-group">
+          <label>ID</label>
+          <input type="text" id="username" />
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-primary" type="button" onclick="saveAccount()">Save Changes</button>
+      </div>
+      <p class="form-msg" id="accountMsg"></p>
+    </div>
+
+    <div class="settings-card">
+      <div class="card-title">
+        <div class="card-icon red-icon">Lock</div>
+        <h3>Security &amp; Password</h3>
+      </div>
+      <hr />
+      <div class="form-group full-width">
+        <label>CURRENT PASSWORD</label>
+        <input type="password" id="currentPassword" placeholder="Enter current password" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>NEW PASSWORD</label>
+          <input type="password" id="newPassword" placeholder="Enter new password" />
+        </div>
+        <div class="form-group">
+          <label>CONFIRM NEW PASSWORD</label>
+          <input type="password" id="confirmPassword" placeholder="Confirm new password" />
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-dark" type="button" onclick="updatePassword()">Update Password</button>
+      </div>
+      <p class="form-msg" id="passwordMsg"></p>
+    </div>
+
+    <div class="logout-area">
+      <button class="btn-logout" type="button" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <script src="/buzzmind-api.js"></script>
+  <script src="/Prof page/Settings page/SettingsP.js"></script>
+</body>
+</html>

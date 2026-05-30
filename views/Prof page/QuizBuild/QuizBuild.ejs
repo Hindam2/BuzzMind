@@ -12,7 +12,9 @@
       <div class="sb-brand">BuzzMind</div>
 
       <nav class="side-nav">
-        <a href="/Prof page/Classes page/professor2.html" class="sl">My Classes</a>
+        <a href="/Prof page/Classes page/professor2.html" class="sl"
+          >My Classes</a
+        >
         <a href="#" class="sl on">Quiz Builder</a>
       </nav>
 
@@ -39,7 +41,9 @@
           <a href="/Prof page/Classes page/professor2.html">My Classes</a>
         </nav>
         <div class="tb-right">
-          <a href="/Prof page/Settings page/SettingsP.html" class="icon-btn"></a>
+          <a
+            href="/Prof page/Settings page/SettingsP.html"
+            class="icon-btn"></a>
         </div>
       </header>
 
@@ -92,10 +96,29 @@
               placeholder="Write your kinetic question here…"></textarea>
 
             <div class="q-image">
-              <img class="q-image-preview" id="q1-image" src="" alt="" style="display:none;max-width:320px;border-radius:8px;margin-top:0.6rem;" />
-              <div class="q-image-controls" style="margin-top:0.4rem;">
-                <input type="file" accept="image/*" onchange="handleImageChange(this, 'q1')" />
-                <button type="button" class="btn-remove-image" onclick="removeImage('q1')" style="display:none;margin-left:0.5rem;">Remove Image</button>
+              <img
+                class="q-image-preview"
+                id="q1-image"
+                src=""
+                alt=""
+                style="
+                  display: none;
+                  max-width: 320px;
+                  border-radius: 8px;
+                  margin-top: 0.6rem;
+                " />
+              <div class="q-image-controls" style="margin-top: 0.4rem">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onchange="handleImageChange(this, 'q1')" />
+                <button
+                  type="button"
+                  class="btn-remove-image"
+                  onclick="removeImage('q1')"
+                  style="display: none; margin-left: 0.5rem">
+                  Remove Image
+                </button>
               </div>
             </div>
 
@@ -116,10 +139,9 @@
                   type="text"
                   value="Gravity remains a constant variable"
                   class="choice-input" />
-                  <button
+                <button
                   class="choice-radio correct"
-                  onclick="selectAnswer(this)">
-                </button>
+                  onclick="selectAnswer(this)"></button>
               </div>
               <div class="choice yellow">
                 <span class="choice-letter">C</span>

@@ -127,7 +127,7 @@ router.post('/:id/students', async (req, res, next) => {
       grade: grade ?? 80,
       participation: participation ?? 3,
       userId: studentUser._id,
-      emoji: emoji || '🧑‍🎓',
+      emoji: emoji || '',
     });
     await cls.save();
     res.status(201).json(cls);

@@ -36,10 +36,10 @@ function updateProfileDisplayName(name) {
 
 // ---------- Save Account Changes ----------
 async function saveAccount() {
-  const name  = document.getElementById('displayName').value.trim();
+  const name = document.getElementById('displayName').value.trim();
   const email = document.getElementById('emailAddress').value.trim();
   const username = document.getElementById('username').value.trim();
-  const msg   = document.getElementById('accountMsg');
+  const msg = document.getElementById('accountMsg');
 
   if (!name) {
     showMsg(msg, 'Display name cannot be empty.', 'red');
@@ -66,15 +66,15 @@ async function saveAccount() {
   }
 
   updateProfileDisplayName(name);
-  showMsg(msg, '✅ Changes saved successfully!', 'green');
+  showMsg(msg, 'Changes saved successfully!', 'green');
 }
 
 // ---------- Update Password ----------
 async function updatePassword() {
   const current = document.getElementById('currentPassword').value;
-  const newPass  = document.getElementById('newPassword').value;
-  const confirm  = document.getElementById('confirmPassword').value;
-  const msg      = document.getElementById('passwordMsg');
+  const newPass = document.getElementById('newPassword').value;
+  const confirm = document.getElementById('confirmPassword').value;
+  const msg = document.getElementById('passwordMsg');
 
   if (!current) {
     showMsg(msg, 'Please enter your current password.', 'red');
@@ -82,7 +82,11 @@ async function updatePassword() {
   }
 
   if (!isStrongPassword(newPass)) {
-    showMsg(msg, 'Password must be at least 8 characters and include uppercase, lowercase, and a number.', 'red');
+    showMsg(
+      msg,
+      'Password must be at least 8 characters and include uppercase, lowercase, and a number.',
+      'red',
+    );
     return;
   }
 
@@ -93,14 +97,17 @@ async function updatePassword() {
 
   if (typeof BuzzMindAPI !== 'undefined') {
     try {
-      await BuzzMindAPI.updatePassword({ currentPassword: current, newPassword: newPass });
+      await BuzzMindAPI.updatePassword({
+        currentPassword: current,
+        newPassword: newPass,
+      });
     } catch (err) {
       showMsg(msg, err.message, 'red');
       return;
     }
   }
 
-  showMsg(msg, '✅ Password updated successfully!', 'green');
+  showMsg(msg, 'Password updated successfully!', 'green');
 
   document.getElementById('currentPassword').value = '';
   document.getElementById('newPassword').value = '';

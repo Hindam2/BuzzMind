@@ -18,6 +18,10 @@ const sessionRoutes = require('./routes/sessionRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const assignmentRoutes = require('./routes/assignmentRoutes');
+const overviewRoutes = require('./routes/overviewRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 const app = express();
 const server = createServer(app);
@@ -85,6 +89,10 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/uploads', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/overview', overviewRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Global error handler:', err.stack || err);

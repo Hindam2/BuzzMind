@@ -1,0 +1,29 @@
+<div class="dash-main">
+  <div class="dash-top">
+    <div>
+      <h1>Quiz Builder</h1>
+      <div class="sub">Design an interactive quiz, then save it or launch it live for your students.</div>
+    </div>
+    <div class="right">
+      <button class="btn" id="saveBtn"><span class="ic" data-icon="save"></span> Save Draft</button>
+      <button class="btn btn-primary" id="launchBtn"><span class="ic" data-icon="play"></span> Launch Quiz</button>
+    </div>
+  </div>
+
+  <div class="dash-content">
+    <div class="card qb-identity">
+      <div class="field">
+        <label>Quiz title</label>
+        <input type="text" id="quizTitle" placeholder="e.g. Newton's Laws of Motion" />
+      </div>
+      <div class="field sm">
+        <label>Total time (min)</label>
+        <input type="number" id="quizTime" min="5" max="120" value="20" />
+      </div>
+    </div>
+
+    <div id="questionsContainer"></div>
+
+    <button class="btn qb-addq" id="addQuestionBtn"><span class="ic" data-icon="plus"></span> Add Question</button>
+  </div>
+</div>

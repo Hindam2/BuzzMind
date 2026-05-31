@@ -142,11 +142,6 @@ registerPageRoute(
   pageController.render('Admin pages/Home page/Admin Home'),
 );
 registerPageRoute(
-  '/Admin pages/prof dashboard/index.html',
-  requirePageAuth('admin'),
-  pageController.render('Admin pages/prof dashboard/index'),
-);
-registerPageRoute(
   '/Admin pages/Settings page/SettingsP.html',
   requirePageAuth('admin'),
   pageController.render('Admin pages/Settings page/SettingsP'),
@@ -156,6 +151,76 @@ registerPageRoute(
   requirePageAuth('admin'),
   pageController.redirect('/Admin pages/Home page/Admin Home.html'),
 );
+
+// ---- New admin dashboards ----
+registerPageRoute(
+  '/Admin pages/Users/index.html',
+  requirePageAuth('admin'),
+  pageController.render('Admin pages/Users/index'),
+);
+registerPageRoute(
+  '/Admin pages/Classes/index.html',
+  requirePageAuth('admin'),
+  pageController.render('Admin pages/Classes/index'),
+);
+registerPageRoute(
+  '/Admin pages/Analytics/index.html',
+  requirePageAuth('admin'),
+  pageController.render('Admin pages/Analytics/index'),
+);
+registerPageRoute(
+  '/Admin pages/Messages/index.html',
+  requirePageAuth('admin'),
+  pageController.render('Admin pages/Messages/index'),
+);
+registerPageRoute(
+  '/Admin pages/QuizBuild/index.html',
+  requirePageAuth('admin'),
+  pageController.render('Admin pages/QuizBuild/index'),
+);
+registerPageRoute(
+  '/Admin pages/Overview/student.html',
+  requirePageAuth('admin'),
+  pageController.render('Admin pages/Overview/student'),
+);
+registerPageRoute(
+  '/Admin pages/Overview/professor.html',
+  requirePageAuth('admin'),
+  pageController.render('Admin pages/Overview/professor'),
+);
+
+// ---- New professor pages ----
+registerPageRoute(
+  '/Prof page/Assignments/index.html',
+  requirePageAuth('professor'),
+  pageController.render('Prof page/Assignments/index'),
+);
+registerPageRoute(
+  '/Prof page/Chat/index.html',
+  requirePageAuth('professor'),
+  pageController.render('Prof page/Chat/index'),
+);
+registerPageRoute(
+  '/Prof page/Overview/student.html',
+  requirePageAuth('professor'),
+  pageController.render('Admin pages/Overview/student'),
+);
+
+// ---- New student pages ----
+registerPageRoute(
+  '/Student pages/Assignments/index.html',
+  requirePageAuth('student'),
+  pageController.render('Student pages/Assignments/index'),
+);
+registerPageRoute(
+  '/Student pages/Chat/index.html',
+  requirePageAuth('student'),
+  pageController.render('Student pages/Chat/index'),
+);
+
+// ---- Public contact page ----
+registerPageRoute('/contact', pageController.render('Contact/index'));
+registerPageRoute('/Contact/index.html', pageController.render('Contact/index'));
 
 registerPageRoute(
   '/Quiz/student-quiz.html',
@@ -167,12 +232,12 @@ registerPageRoute(
 );
 registerPageRoute(
   '/Quiz/professor-quiz.html',
-  requirePageAuth('professor'),
+  requirePageAuth('professor', 'admin'),
   pageController.render('Quiz/professor-quiz'),
 );
 registerPageRoute(
   '/Quiz/leaderboard2.html',
-  requirePageAuth('professor'),
+  requirePageAuth('professor', 'admin'),
   pageController.render('Quiz/leaderboard2'),
 );
 

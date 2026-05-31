@@ -28,7 +28,7 @@ router.get('/library', async (req, res, next) => {
   }
 });
 
-router.get('/', requireRole('professor'), async (req, res, next) => {
+router.get('/', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
     const quizzes = await Quiz.find({ professor: req.user._id }).sort({
       createdAt: -1,
@@ -39,7 +39,7 @@ router.get('/', requireRole('professor'), async (req, res, next) => {
   }
 });
 
-router.post('/', requireRole('professor'), async (req, res, next) => {
+router.post('/', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
     const { title, questions, totalTime, classId, status } = req.body;
     if (!title?.trim()) {
@@ -80,7 +80,7 @@ router.get('/:id', async (req, res, next) => {
     const quiz = await Quiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
     const isOwner =
-      req.user.Role === 'professor' &&
+      ['professor', 'admin'].includes(req.user.Role) &&
       quiz.professor.toString() === req.user._id.toString();
     if (!isOwner && quiz.status !== 'published') {
       return res.status(403).json({ error: 'Forbidden' });
@@ -91,7 +91,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-router.put('/:id', requireRole('professor'), async (req, res, next) => {
+router.put('/:id', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
     const quiz = await Quiz.findOne({
       _id: req.params.id,
@@ -112,7 +112,7 @@ router.put('/:id', requireRole('professor'), async (req, res, next) => {
   }
 });
 
-router.delete('/:id', requireRole('professor'), async (req, res, next) => {
+router.delete('/:id', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
     const quiz = await Quiz.findOneAndDelete({
       _id: req.params.id,
@@ -125,7 +125,7 @@ router.delete('/:id', requireRole('professor'), async (req, res, next) => {
   }
 });
 
-router.post('/:id/launch', requireRole('professor'), async (req, res, next) => {
+router.post('/:id/launch', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
     const quiz = await Quiz.findOne({
       _id: req.params.id,

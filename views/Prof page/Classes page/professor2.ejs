@@ -1,172 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BuzzMind – Professor Home</title>
-  <link rel="stylesheet" href="/Prof page/Classes page/professor2.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuzzMind · My Classes</title>
+  <link rel="stylesheet" href="/shared/dashboard.css" />
 </head>
 <body>
+<div class="dash-shell">
+  <%- include('../../partials/prof-sidebar', { active: 'classes' }) %>
 
-<!-- ══ SIDEBAR ══ -->
-<aside class="sidebar">
-  <div class="sb-logo">BuzzMind</div>
-
-  <div class="prof-row">
-  <div class="prof-av"></div>
-    <div>
-      <div class="prof-name">Prof. Kinetic</div>
-      <div class="prof-role">PLAYGROUND ADMIN</div>
-    </div>
-  </div>
-      <!-- Sidebar -->
-  <nav class="side-nav">
-    <a href="#" class="sl on"><span class="sl-ico">⊞</span> My Classes</a>
-  </nav>
-
-  <div class="sb-foot">
-    <button class="btn-add" id="add-class-btn" type="button">Add New Class</button>
-    <a href="/Prof page/Settings page/SettingsP.html" class="sl-sm">↪ LOGOUT</a>
-  </div>
-</aside>
-  
-<!-- ══ MAIN ══ -->
-<div class="main">
-
-  <header class="Navbar">
-    <span class="tb-logo">BuzzMind</span>
-    <nav class="tb-nav">
-      <a href="#" class="on">My Classes</a>
-    </nav>
-    <div class="tb-right">
+  <div class="dash-main">
+    <div class="dash-top">
+      <div>
+        <h1>My Classrooms</h1>
+        <div class="sub">Manage your currently running semesters and curricula.</div>
+      </div>
+      <div class="right">
         <div class="search">
-        <input type="text" placeholder="Search classes..." id="searchInput"/>
-        <span></span>
-      </div>
-      <a href="/Prof page/Settings page/SettingsP.html" class="ico-btn"></a>
-<button class="create-btn" onclick="location.href='/Prof page/QuizBuild/QuizBuild.html'">
-  Create<br/>Quiz
-</button>    </div>
-  </header>
-
-  <!-- Content -->
-  <div class="content">
-
-    <!-- Stats -->
-    <div class="stats">
-      <div class="sc">
-        <div class="si si-b"></div>
-      </div>
-      <div class="sc">
-        <div class="si si-g"></div>
-        <div><div class="sn">94%</div><div class="sl2">AVG.<br/>COMPLETION</div></div>
-      </div>
-      <div class="sc">
-        <div class="si si-p"></div>
-        <div><div class="sn">1.2k</div><div class="sl2">QUIZZES<br/>TAKEN</div></div>
-      </div>
-      <div class="sc">
-        <div class="si si-y"></div>
-        <div><div class="sn">28</div><div class="sl2">TOP RANK<br/>ACHIEVED</div></div>
+          <span class="ic" data-icon="search"></span>
+          <input type="text" id="searchInput" placeholder="Search classes..." />
+        </div>
+        <a href="/Prof page/QuizBuild/QuizBuild.html" style="text-decoration:none"><button class="btn"><span class="ic" data-icon="list-checks"></span> Create Quiz</button></a>
+        <button class="btn btn-primary" id="addBtn"><span class="ic" data-icon="plus"></span> New Class</button>
       </div>
     </div>
 
-    <!-- Active Classrooms -->
-    <div>
-      <div class="sh">
-        <div>
-          <h2>Active Classrooms</h2>
-          <p>Manage your currently running semesters and curricula.</p>
+    <div class="dash-content">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-ic b"><span class="ic" data-icon="book-open"></span></div>
+          <div><div class="lbl">Active classes</div><div class="num" id="sClasses">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ic g"><span class="ic" data-icon="users"></span></div>
+          <div><div class="lbl">Total students</div><div class="num" id="sStudents">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ic"><span class="ic" data-icon="bar-chart"></span></div>
+          <div><div class="lbl">Avg. progress</div><div class="num" id="sProgress">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ic a"><span class="ic" data-icon="award"></span></div>
+          <div><div class="lbl">Levels</div><div class="num" id="sLevels">—</div></div>
         </div>
       </div>
 
-      <div class="cgrid" id="cgrid">
-
-        <div class="cc">
-          <div class="ct" style="background:linear-gradient(135deg,#0f172a,#1e1b4b)">
-            <div class="ct-ov"></div><span class="lvl">LEVEL 400</span>
-          </div>
-          <div class="cb">
-            <h3>Advanced Physics</h3>
-            <p class="sch">MWF • 10:00 AM - 11:30 AM</p>
-            <div class="pr"><span class="pl">COURSE PROGRESS</span><span class="pp">68%</span></div>
-            <div class="pbar"><div class="pf pf-g" style="width:68%"></div></div>
-            <div class="cf">
-              <span class="stc">32 Students</span>
-              <a href="/Prof page/classes_design/classes_page.html"><button class="mbtn" onclick="manage('Advanced Physics')">Manage</button></a>
-            </div>
-          </div>
-        </div>
-
-        <div class="cc">
-          <div class="ct" style="background:linear-gradient(135deg,#1c1008,#3b2005)">
-            <div class="ct-ov"></div><span class="lvl">LEVEL 200</span>
-          </div>
-          <div class="cb">
-            <h3>Creative Writing</h3>
-            <p class="sch">TTH • 02:00 PM - 03:30 PM</p>
-            <div class="pr"><span class="pl">COURSE PROGRESS</span><span class="pp">42%</span></div>
-            <div class="pbar"><div class="pf pf-g" style="width:42%"></div></div>
-            <div class="cf">
-              <span class="stc">18 Students</span>
-              <a href="/Prof page/classes_design/classes_page.html"><button class="mbtn" onclick="manage('Creative Writing')">Manage</button></a>
-            </div>
-          </div>
-        </div>
-
-        <div class="cc">
-          <div class="ct" style="background:linear-gradient(135deg,#0d001a,#1a0033)">
-            <div class="ct-ov"></div><span class="lvl">LEVEL 500</span>
-          </div>
-          <div class="cb">
-            <h3>Calculus BC</h3>
-            <p class="sch">Daily • 08:00 AM - 09:00 AM</p>
-            <div class="pr"><span class="pl">COURSE PROGRESS</span><span class="pp">85%</span></div>
-            <div class="pbar"><div class="pf pf-p" style="width:85%"></div></div>
-            <div class="cf">
-              <span class="stc">45 Students</span>
-              <a href="/Prof page/classes_design/classes_page.html"><button class="mbtn" onclick="manage('Calculus BC')">Manage</button></a>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      <div class="grid" id="cgrid"><div class="empty">Loading classes…</div></div>
     </div>
-
-    <!-- Footer -->
-    <footer class="ft">
-      <span>© 2026 BuzzMind. Prof PLAYGROUND. NO BORING BITS.</span>
-      </div>
-    </footer>
-
   </div>
 </div>
 
-<div class="modal-overlay" id="class-modal" aria-hidden="true">
-  <div class="class-modal" role="dialog" aria-modal="true" aria-labelledby="class-modal-title">
-    <div class="modal-head">
-      <div>
-        <h2 id="class-modal-title">Create Class</h2>
-        <p>Add a new classroom to your professor dashboard.</p>
+<!-- New class modal -->
+<div class="modal-back" id="classModal">
+  <div class="modal">
+    <h2>Create Class</h2>
+    <div class="modal-sub">Add a new classroom to your dashboard.</div>
+    <div class="form-alert" id="cmAlert"></div>
+    <form id="classForm">
+      <div class="field">
+        <label>Class name</label>
+        <input type="text" id="cmName" placeholder="Advanced Physics" required />
       </div>
-      <button class="modal-close" id="close-class-modal" type="button" aria-label="Close">x</button>
-    </div>
-
-    <div class="modal-field">
-      <label for="class-name-input">CLASS NAME</label>
-      <input id="class-name-input" type="text" placeholder="Example: Advanced Physics" />
-      <p class="modal-error" id="class-name-error"></p>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" id="cancel-class-modal" type="button">Cancel</button>
-      <button class="btn-create-class" id="create-class-confirm" type="button">Create Class</button>
-    </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Schedule</label>
+          <input type="text" id="cmSchedule" placeholder="MWF · 10:00 AM" />
+        </div>
+        <div class="field">
+          <label>Level</label>
+          <input type="text" id="cmLevel" placeholder="LEVEL 100" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="cmCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="cmSave">Create Class</button>
+      </div>
+    </form>
   </div>
 </div>
 
 <script src="/buzzmind-api.js"></script>
 <script src="/buzzmind-session.js"></script>
-<script src="/Prof page/Classes page/professor2.js"></script>
+<script src="/shared/dashboard.js"></script>
+<script>
+(function () {
+  const E = Dash.escapeHTML;
+  let classes = [];
+  let query = '';
+
+  function manageHref(id) {
+    return `/Prof page/classes_design/classes_page.html?classId=${encodeURIComponent(id)}`;
+  }
+
+  function updateStats() {
+    const students = classes.reduce((n, c) => n + (c.students ? c.students.length : 0), 0);
+    const avg = classes.length
+      ? Math.round(classes.reduce((n, c) => n + (c.progress || 0), 0) / classes.length)
+      : 0;
+    const levels = new Set(classes.map((c) => (c.level || 'LEVEL 100').toUpperCase()));
+    document.getElementById('sClasses').textContent = classes.length;
+    document.getElementById('sStudents').textContent = students;
+    document.getElementById('sProgress').textContent = avg + '%';
+    document.getElementById('sLevels').textContent = levels.size;
+  }
+
+  function cardHtml(c) {
+    const count = c.students ? c.students.length : 0;
+    const progress = c.progress || 0;
+    const cover = c.coverGradient || 'linear-gradient(135deg,#6d5efc,#8b6bff)';
+    return `<div class="card" data-id="${c._id}" style="padding:0;overflow:hidden">
+      <div style="height:74px;background:${E(cover)};position:relative">
+        <span class="badge b-muted" style="position:absolute;top:12px;left:14px;background:rgba(255,255,255,.85);color:#1c2240">${E(c.level || 'LEVEL 100')}</span>
+      </div>
+      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <h3 style="margin:0">${E(c.name)}</h3>
+        <div class="meta" style="margin:0">${Dash.icon('clock')} ${E(c.schedule || 'Schedule TBD')}</div>
+        <div class="row-between" style="font-size:12px;color:var(--muted)">
+          <span>COURSE PROGRESS</span><span>${progress}%</span>
+        </div>
+        <div class="bar"><div class="bar-fill g" style="width:${progress}%"></div></div>
+        <div class="card-foot" style="margin-top:4px">
+          <span class="badge b-green">${count} student${count === 1 ? '' : 's'}</span>
+          <div style="display:flex;gap:6px;margin-left:auto">
+            <button class="btn btn-sm btn-danger" data-act="del" type="button"><span class="ic">${Dash.icon('trash')}</span></button>
+            <button class="btn btn-sm btn-primary" data-act="manage" type="button">Manage</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function render() {
+    const grid = document.getElementById('cgrid');
+    const list = query ? classes.filter((c) => c.name.toLowerCase().includes(query)) : classes;
+    if (!list.length) {
+      grid.innerHTML = `<div class="empty"><div class="big">${Dash.icon('book-open')}</div>No classes yet. Create one to get started.</div>`;
+      return;
+    }
+    grid.innerHTML = list.map(cardHtml).join('');
+    grid.querySelectorAll('.card').forEach((card) => {
+      const c = classes.find((x) => x._id === card.dataset.id);
+      card.querySelector('[data-act="manage"]').addEventListener('click', () => { location.href = manageHref(c._id); });
+      card.querySelector('[data-act="del"]').addEventListener('click', () => removeClass(c));
+    });
+  }
+
+  async function load() {
+    try {
+      classes = await BuzzMindAPI.getClasses();
+      updateStats();
+      render();
+    } catch (err) {
+      Dash.toast(err.message || 'Failed to load classes', 'error');
+      document.getElementById('cgrid').innerHTML = `<div class="empty">Could not load classes.</div>`;
+    }
+  }
+
+  function setAlert(msg) {
+    const a = document.getElementById('cmAlert');
+    a.textContent = msg || '';
+    a.className = msg ? 'form-alert show error' : 'form-alert';
+  }
+
+  function openCreate() {
+    document.getElementById('classForm').reset();
+    setAlert('');
+    Dash.openModal('classModal');
+    document.getElementById('cmName').focus();
+  }
+
+  async function submit(e) {
+    e.preventDefault();
+    const body = {
+      name: document.getElementById('cmName').value.trim(),
+      schedule: document.getElementById('cmSchedule').value.trim(),
+      level: document.getElementById('cmLevel').value.trim(),
+    };
+    if (!body.name) { setAlert('Class name is required.'); return; }
+    const btn = document.getElementById('cmSave');
+    btn.disabled = true;
+    try {
+      await BuzzMindAPI.createClass(body);
+      Dash.closeModal('classModal');
+      Dash.toast('Class created.');
+      await load();
+    } catch (err) {
+      setAlert(err.message || 'Could not create class.');
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function removeClass(c) {
+    if (!confirm(`Delete "${c.name}"?`)) return;
+    try {
+      await BuzzMindAPI.deleteClass(c._id);
+      classes = classes.filter((x) => x._id !== c._id);
+      updateStats();
+      render();
+      Dash.toast('Class deleted.');
+    } catch (err) {
+      Dash.toast(err.message || 'Could not delete class', 'error');
+    }
+  }
+
+  document.getElementById('addBtn').addEventListener('click', openCreate);
+  document.getElementById('cmCancel').addEventListener('click', () => Dash.closeModal('classModal'));
+  document.getElementById('classForm').addEventListener('submit', submit);
+  document.getElementById('classModal').addEventListener('click', (e) => {
+    if (e.target.id === 'classModal') Dash.closeModal('classModal');
+  });
+  document.getElementById('searchInput').addEventListener('input', function () {
+    query = this.value.trim().toLowerCase();
+    render();
+  });
+
+  Dash.boot();
+  load();
+})();
+</script>
 </body>
 </html>

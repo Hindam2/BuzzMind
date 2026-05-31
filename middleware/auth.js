@@ -82,9 +82,10 @@ function requireRole(...roles) {
 
 /**
  * Protect HTML pages.
- * @param {string} [requiredRole] - e.g. 'student'. Omit on /role (login only, role may be unset).
+ * @param {...string} requiredRoles - e.g. 'student', or 'professor','admin' to allow either.
+ *   Omit entirely on /role (login only, role may be unset).
  */
-function requirePageAuth(requiredRole) {
+function requirePageAuth(...requiredRoles) {
   return async (req, res, next) => {
     if (!req.session?.userId) {
       const nextUrl = encodeURIComponent(req.originalUrl);
@@ -97,11 +98,15 @@ function requirePageAuth(requiredRole) {
         return req.session.destroy(() => res.redirect('/login'));
       }
 
-      if (!req.session.role && requiredRole) {
+      if (!req.session.role && requiredRoles.length) {
         return res.redirect('/role');
       }
 
-      if (requiredRole && req.session.role && req.session.role !== requiredRole) {
+      if (
+        requiredRoles.length &&
+        req.session.role &&
+        !requiredRoles.includes(req.session.role)
+      ) {
         return res.redirect(roleHome(req.session.role));
       }
 

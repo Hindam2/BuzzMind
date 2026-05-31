@@ -2,7 +2,7 @@ const express = require('express');
 
 const authController = require('../controllers/authController');
 const pageController = require('../controllers/pageController');
-const { requirePageAuth } = require('../middleware/auth');
+const { requirePageAuth, redirectIfAuthenticated } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -14,17 +14,44 @@ function registerPageRoute(routePath, ...handlers) {
   }
 }
 
+registerPageRoute('/', pageController.redirect('/Home Page/Home Page.html'));
 registerPageRoute(
-  '/',
-  pageController.render('index', (req) => ({ error: req.query.error })),
+  '/index.html',
+  pageController.redirect('/Home Page/Home Page.html'),
 );
-registerPageRoute('/index.html', pageController.redirect('/'));
 registerPageRoute(
-  '/Login Page/Login Page.html',
-  pageController.render('Login Page/Login Page'),
+  '/home',
+  pageController.redirect('/Home Page/Home Page.html'),
 );
+registerPageRoute(
+  '/login',
+  redirectIfAuthenticated,
+  pageController.render('Login/index', (req) => ({
+    error: req.query.error,
+    role: req.query.role,
+    next: req.query.next || '',
+  })),
+);
+registerPageRoute('/register', (req, res) => {
+  const qs = Object.keys(req.query).length
+    ? `?${new URLSearchParams(req.query).toString()}`
+    : '';
+  res.redirect(`/login${qs}`);
+});
+registerPageRoute(
+  '/Home Page/Home Page.html',
+  pageController.render('Home Page/Home Page', (req) => ({
+    user: req.session.user || null,
+  })),
+);
+registerPageRoute('/Login Page/Login Page.html', (req, res) => {
+  const qs = Object.keys(req.query).length
+    ? `?${new URLSearchParams(req.query).toString()}`
+    : '';
+  res.redirect(`/login${qs}`);
+});
 
-router.post('/', authController.registerUser);
+router.post('/register', authController.registerUser);
 router.post('/login', authController.loginUser);
 router.get('/logout', authController.logoutPage);
 router.post('/logout', authController.logoutPage);
@@ -50,7 +77,6 @@ registerPageRoute(
 );
 registerPageRoute(
   '/Student pages/Joined Students/Joined Students.html',
-  requirePageAuth('student'),
   pageController.render('Student pages/Joined Students/Joined Students'),
 );
 registerPageRoute(
@@ -133,12 +159,10 @@ registerPageRoute(
 
 registerPageRoute(
   '/Quiz/student-quiz.html',
-  requirePageAuth('student'),
   pageController.render('Quiz/student-quiz'),
 );
 registerPageRoute(
   '/Quiz/leaderboard.html',
-  requirePageAuth('student'),
   pageController.render('Quiz/leaderboard'),
 );
 registerPageRoute(

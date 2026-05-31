@@ -6,11 +6,22 @@ const router = express.Router();
 
 router.use(requireAuth);
 
+function studentResultsFilter(user) {
+  const nameMatch = [user.Name, user.Username]
+    .filter(Boolean)
+    .map((label) => ({
+      displayName: new RegExp(`^${String(label).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+    }));
+  return {
+    $or: [{ userId: user._id }, ...nameMatch],
+  };
+}
+
 router.get('/', requireRole('student', 'professor', 'admin'), async (req, res, next) => {
   try {
     const filter =
       req.user.Role === 'student'
-        ? { $or: [{ userId: req.user._id }, { displayName: req.user.Name }] }
+        ? studentResultsFilter(req.user)
         : req.user.Role === 'professor'
           ? {}
           : {};
@@ -19,6 +30,8 @@ router.get('/', requireRole('student', 'professor', 'admin'), async (req, res, n
     res.json(
       results.map((r) => ({
         id: r._id,
+        quizId: r.quizId,
+        sessionId: r.sessionId,
         quizTitle: r.quizTitle,
         score: r.score,
         totalQuestions: r.totalQuestions,

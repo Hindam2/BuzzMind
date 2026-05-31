@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BuzzMind</title>
+    <link rel="stylesheet" href="/Student pages/Home Page/style.css" />
+  </head>
+  <body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+      <a href="#" class="logo">BuzzMind</a>
+
+      <ul class="nav-links">
+        <li><a href="#" class="active">Discover</a></li>
+        <li><a href="/Student pages/Libary/index.html">Library</a></li>
+        <li>
+          <a href="/Student pages/reports_design/reports_page.html">Reports</a>
+        </li>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="/Student pages/Settings page/Settings.html" class="avatar"
+          >U</a
+        >
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <h1>The fun way to <em>learn</em> and <em>play!</em></h1>
+
+      <p class="hero-sub">
+        Host a game, challenge your friends, and master any subject.
+      </p>
+
+      <!-- PIN CARD -->
+      <div class="pin-card">
+        <input
+          type="text"
+          id="playerNameInput"
+          class="pin-input pin-input-name"
+          placeholder="YOUR NAME"
+          maxlength="50"
+          autocomplete="nickname" />
+        <input
+          type="text"
+          id="pinInput"
+          class="pin-input"
+          placeholder="GAME PIN"
+          maxlength="6"
+          inputmode="numeric" />
+
+        <button class="btn-join" onclick="joinGame(event)">JOIN GAME</button>
+
+        <p class="pin-hint">Ask your host for the game PIN to join</p>
+      </div>
+    </section>
+
+    <script src="/buzzmind-api.js"></script>
+    <script src="/buzzmind-session.js"></script>
+    <script src="/Student pages/Home Page/Script.js"></script>
+  </body>
+</html>

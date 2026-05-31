@@ -2,8 +2,9 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
 const { createServer } = require('http');
+const { createSessionMiddleware } = require('./config/session');
+const { hydrateSession } = require('./middleware/auth');
 const { Server } = require('socket.io');
 
 const connectDatabase = require('./config/database');
@@ -16,6 +17,7 @@ const quizRoutes = require('./routes/quizRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 const server = createServer(app);
@@ -59,20 +61,19 @@ if (isProduction) {
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || 'buzzmind-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    rolling: true,
-    cookie: {
-      secure: isProduction,
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    },
-  }),
-);
+app.use(createSessionMiddleware());
+
+app.use(async (req, res, next) => {
+  if (req.session?.userId) {
+    try {
+      await hydrateSession(req);
+    } catch (err) {
+      console.error('Session hydrate failed:', err.message);
+    }
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(pageRoutes);
@@ -81,6 +82,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/classes', classRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/sessions', sessionRoutes);
+app.use('/api/uploads', uploadRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/reports', reportRoutes);
 

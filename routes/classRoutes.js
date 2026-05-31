@@ -104,7 +104,8 @@ router.post('/:id/students', async (req, res, next) => {
     });
     if (!studentUser) {
       return res.status(404).json({
-        error: 'Student must have an existing student account before being added',
+        error:
+          'Student must have an existing student account before being added',
       });
     }
     const cls = await Class.findOne({
@@ -118,7 +119,9 @@ router.post('/:id/students', async (req, res, next) => {
         student.email === emailTrim,
     );
     if (alreadyAdded) {
-      return res.status(409).json({ error: 'Student is already in this class' });
+      return res
+        .status(409)
+        .json({ error: 'Student is already in this class' });
     }
 
     cls.students.push({

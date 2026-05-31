@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { hashPassword, verifyPassword } = require('../utils/password');
+const { roleHome, safeNextUrl } = require('../utils/rolePaths');
 
 function destroySession(req, onDone) {
   if (!req.session) {
@@ -50,30 +51,57 @@ function redirectWithSession(req, res, target) {
   });
 }
 
+function redirectAfterAuth(req, res, user) {
+  const nextUrl = safeNextUrl(req.body.next || req.query.next);
+  if (nextUrl) {
+    return redirectWithSession(req, res, nextUrl);
+  }
+  if (user.Role === 'professor') return redirectWithSession(req, res, '/professor');
+  if (user.Role === 'student') return redirectWithSession(req, res, '/student');
+  if (user.Role === 'admin') return redirectWithSession(req, res, '/admin');
+  return redirectWithSession(req, res, '/role');
+}
+
+function redirectToLoginWithError(req, res, code) {
+  const role = req.body.preferredRole || req.query.role || '';
+  const roleQs = role ? `&role=${encodeURIComponent(role)}` : '';
+  const target = `/login?error=${code}${roleQs}`;
+
+  if (!req.session) {
+    return res.redirect(target);
+  }
+  req.session.destroy(() => res.redirect(target));
+}
+
 async function registerUser(req, res) {
   try {
     const { Name, Username, Password, Email, preferredRole } = req.body;
+
+    if (!Name?.trim() || !Username?.trim() || !Password || !Email?.trim()) {
+      return redirectToLoginWithError(req, res, 'missing_fields');
+    }
+
+    const emailNorm = Email.trim().toLowerCase();
     const existingUser = await User.findOne({
-      $or: [{ Email }, { Username }],
+      $or: [{ Email: emailNorm }, { Username: Username.trim() }],
     });
 
     if (existingUser) {
-      // Determine which field is already taken so we can show a specific message
-      if (existingUser.Email === Email) {
-        return res.redirect('/login?error=email_exists');
+      if (existingUser.Email === emailNorm) {
+        return redirectToLoginWithError(req, res, 'email_exists');
       }
-      if (existingUser.Username === Username) {
-        return res.redirect('/login?error=username_exists');
+      if (existingUser.Username === Username.trim()) {
+        return redirectToLoginWithError(req, res, 'username_exists');
       }
-      return res.redirect('/login?error=user_exists');
+      return redirectToLoginWithError(req, res, 'user_exists');
     }
 
     const hashedPassword = await hashPassword(Password);
     const userData = {
-      Name,
-      Username,
+      Name: Name.trim(),
+      Username: Username.trim(),
       Password: hashedPassword,
-      Email,
+      Email: emailNorm,
     };
 
     // If the signup came with a preferred role (from ?role=...), apply it if valid
@@ -89,13 +117,7 @@ async function registerUser(req, res) {
     req.session.userId = user._id.toString();
     req.session.role = user.Role;
 
-    if (user.Role === 'professor')
-      return redirectWithSession(req, res, '/professor');
-    if (user.Role === 'student')
-      return redirectWithSession(req, res, '/student');
-    if (user.Role === 'admin') return redirectWithSession(req, res, '/admin');
-
-    redirectWithSession(req, res, '/role');
+    return redirectAfterAuth(req, res, user);
   } catch (error) {
     console.error('Error saving data:', error);
     res.status(500).send('Error');
@@ -126,13 +148,7 @@ async function loginUser(req, res) {
     req.session.userId = user._id.toString();
     req.session.role = user.Role;
 
-    if (user.Role === 'professor')
-      return redirectWithSession(req, res, '/professor');
-    if (user.Role === 'student')
-      return redirectWithSession(req, res, '/student');
-    if (user.Role === 'admin') return redirectWithSession(req, res, '/admin');
-
-    redirectWithSession(req, res, '/role');
+    return redirectAfterAuth(req, res, user);
   } catch (error) {
     console.error('Error logging in:', error);
     res.status(500).send('Error');
@@ -141,7 +157,7 @@ async function loginUser(req, res) {
 
 async function setRole(req, res) {
   if (!req.session.userId) {
-    return res.redirect('/');
+    return res.redirect('/login');
   }
 
   try {
@@ -154,12 +170,7 @@ async function setRole(req, res) {
     await User.findByIdAndUpdate(req.session.userId, { Role: role });
     req.session.role = role;
 
-    if (role === 'professor')
-      return redirectWithSession(req, res, '/professor');
-    if (role === 'student') return redirectWithSession(req, res, '/student');
-    if (role === 'admin') return redirectWithSession(req, res, '/admin');
-
-    redirectWithSession(req, res, '/');
+    return redirectAfterAuth(req, res, { Role: role });
   } catch (error) {
     console.error('Error setting role:', error);
     res.status(500).send('Error');

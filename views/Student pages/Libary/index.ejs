@@ -44,14 +44,21 @@
             type="text"
             placeholder="Search your quizzes..."
             id="quizSearch" />
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"></span>
         </div>
       </header>
 
       <!-- MY QUIZZES -->
-      <section class="quiz-section">
-        <div class="section-header">
-          <h2>📁 My Quizzes</h2>
+      <section class="quiz-section" id="myQuizzesSection">
+        <div class="section-header section-header-row">
+          <h2>My Quizzes</h2>
+          <button
+            type="button"
+            class="btn-view-all"
+            id="viewAllMyQuizzes"
+            hidden>
+            View all
+          </button>
         </div>
 
         <div class="quiz-grid" id="myQuizzes"></div>
@@ -60,7 +67,7 @@
       <!-- SHARED -->
       <section class="quiz-section">
         <div class="section-header">
-          <h2>👥 Shared with Me</h2>
+          <h2>Shared with Me</h2>
         </div>
 
         <div class="shared-list"></div>
@@ -68,6 +75,7 @@
     </main>
 
     <script src="/buzzmind-api.js"></script>
+    <script src="/buzzmind-session.js"></script>
     <script src="/Student pages/Libary/Script.js"></script>
   </body>
 </html>

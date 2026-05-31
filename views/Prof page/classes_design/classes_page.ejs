@@ -6,6 +6,7 @@
     <title>BuzzMind - Classes</title>
     <link rel="stylesheet" href="/Prof page/classes_design/classes_style.css" />
     <script src="/buzzmind-api.js"></script>
+    <script src="/buzzmind-session.js"></script>
     <script src="/Prof page/classes_design/classes_script.js" defer></script>
   </head>
   <body>
@@ -25,15 +26,15 @@
 
       <nav class="sidebar-nav">
         <a class="nav-item" href="/Prof page/Classes page/professor2.html"
-          >🏠 Myclasses</a
+          >Myclasses</a
         >
-        <a class="nav-item active" href="#">👥 Students</a>
+        <a class="nav-item active" href="#">Students</a>
         <a class="nav-item" href="/Prof page/QuizBuild/QuizBuild.html"
-          >✏️ Quiz Builder</a
+          >Quiz Builder</a
         >
       </nav>
       <div class="sidebar-footer">
-        <a class="footer-link" href="/">Logout</a>
+        <a class="footer-link" href="/logout">Logout</a>
       </div>
     </aside>
 
@@ -56,9 +57,9 @@
         <div class="topbar-actions">
           <button
             class="btn-settings"
-            onclick="location.href = '/Prof page/Settings page/SettingsP.html'">
-            ⚙️
-          </button>
+            onclick="
+              location.href = '/Prof page/Settings page/SettingsP.html'
+            "></button>
         </div>
       </div>
 
@@ -67,7 +68,7 @@
       <!-- Banner -->
       <div class="class-banner">
         <div class="banner-text">
-          <div class="banner-title">Class Momentum is High! 🚀</div>
+          <div class="banner-title">Class Momentum is High!</div>
           <div class="banner-sub">
             Your students are crushing it this week. Ready for a challenge?
           </div>
@@ -89,7 +90,7 @@
           class="search-input"
           type="text"
           id="search-input"
-          placeholder="🔍 Search student by name..." />
+          placeholder="Search student by name..." />
         <button class="btn-add-student" id="add-student-btn">
           + Add Student
         </button>

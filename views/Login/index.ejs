@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BuzzMind</title>
-    <link rel="stylesheet" href="Login Page.css" />
+    <link rel="stylesheet" href="/Login Page/Login Page.css" />
   </head>
 
   <body>
@@ -16,12 +16,24 @@
           <button id="login-btn" class="toggle-btn">Login</button>
         </div>
         
-        <% if (typeof error !== 'undefined') { %>
+        <% if (typeof error !== 'undefined' && error) { %>
           <div id="error-msg" style="color: red; text-align: center; margin-bottom: 10px;">
-            <% if (error === 'user_exists') { %>
-              Email or Username already exists.
+            <% if (error === 'email_exists') { %>
+              That email is already registered.
+            <% } else if (error === 'username_exists') { %>
+              That username is already taken.
+            <% } else if (error === 'user_exists') { %>
+              Email or username already exists.
+            <% } else if (error === 'user_not_found') { %>
+              No account found with that email or username.
+            <% } else if (error === 'wrong_password') { %>
+              Incorrect password.
             <% } else if (error === 'invalid_credentials') { %>
               Invalid email/username or password.
+            <% } else if (error === 'missing_fields') { %>
+              Please fill in all sign-up fields.
+            <% } else { %>
+              Something went wrong. Please try again.
             <% } %>
           </div>
         <% } %>
@@ -30,7 +42,10 @@
           <h1>Create Your Account</h1>
           <p class="sub">Join the BuzzMind community today.</p>
 
-          <form action="/" method="post" onsubmit="return validateSignup();">
+          <form action="/register" method="post" onsubmit="return validateSignup();">
+            <% if (typeof role !== 'undefined' && role) { %>
+            <input type="hidden" name="preferredRole" value="<%= role %>" />
+            <% } %>
             <div class="form-row">
               <div class="field" style="margin-bottom: 0">
                 <label for="fullname">Full Name</label>
@@ -81,6 +96,7 @@
           <p class="sub">Welcome back to BuzzMind.</p>
 
           <form action="/login" method="post" onsubmit="return validateLogin();">
+            <input type="hidden" name="next" id="login-next" value="<%= typeof next !== 'undefined' ? next : '' %>" />
             <div class="field">
               <label for="emailOrUsername">Email or Username</label>
               <input
@@ -121,6 +137,6 @@
       <span>© 2026 BuzzMind. All rights reserved.</span>
     </div>
 
-    <script src="Login Page.js"></script>
+    <script src="/Login Page/Login Page.js"></script>
   </body>
 </html>

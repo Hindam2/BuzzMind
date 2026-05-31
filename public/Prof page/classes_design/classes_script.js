@@ -45,7 +45,7 @@ function mapStudent(s) {
     email: s.email,
     grade: s.grade,
     participation: s.participation,
-    emoji: s.emoji || '🧑‍🎓',
+    emoji: s.emoji || '',
   };
 }
 
@@ -69,7 +69,7 @@ function renderRoster(list) {
       <td>${participationBars(s.participation)}</td>
       <td>
         <div class="action-btns">
-          <button class="btn-delete" data-id="${s.id}">🗑️</button>
+          <button class="btn-delete" data-id="${s.id}">Delete</button>
         </div>
       </td>`;
     tbody.appendChild(tr);
@@ -101,8 +101,22 @@ async function loadClassRoster() {
   classId = getClassIdFromUrl();
   if (!classId || typeof BuzzMindAPI === 'undefined') {
     students = [
-      { id: '1', name: 'Alex "Neutron" Rivera', email: 'alex.rivera@buzzmind.com', grade: 94, participation: 4, emoji: '🧑‍🚀' },
-      { id: '2', name: 'Luna Stark', email: 'luna.stark@buzzmind.com', grade: 89, participation: 3, emoji: '👩‍🔬' },
+      {
+        id: '1',
+        name: 'Alex "Neutron" Rivera',
+        email: 'alex.rivera@buzzmind.com',
+        grade: 94,
+        participation: 4,
+        emoji: '',
+      },
+      {
+        id: '2',
+        name: 'Luna Stark',
+        email: 'luna.stark@buzzmind.com',
+        grade: 89,
+        participation: 3,
+        emoji: '',
+      },
     ];
     renderRoster(students);
     return;
@@ -124,7 +138,8 @@ document.querySelector('#search-input')?.addEventListener('input', (e) => {
   const q = e.target.value.toLowerCase();
   renderRoster(
     students.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q),
+      (s) =>
+        s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q),
     ),
   );
 });
@@ -169,7 +184,7 @@ document.querySelector('#confirm-add').onclick = async () => {
       email,
       grade: 80,
       participation: 3,
-      emoji: '🧑‍🎓',
+      emoji: '',
     });
   }
 

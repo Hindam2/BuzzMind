@@ -15,6 +15,16 @@ function registerPageRoute(routePath, ...handlers) {
   }
 }
 
+// Locals for public marketing pages (About, Privacy, Pricing, Contact):
+// exposes the logged-in user, their dashboard link, and the active nav item.
+function marketingLocals(active) {
+  return (req) => {
+    const user = req.user || null;
+    const dashHref = user ? (user.Role ? roleHome(user.Role) : '/role') : '/login';
+    return { user, dashHref, active };
+  };
+}
+
 registerPageRoute('/', pageController.redirect('/Home Page/Home Page.html'));
 registerPageRoute(
   '/index.html',
@@ -221,9 +231,15 @@ registerPageRoute(
   pageController.render('Student pages/Chat/index'),
 );
 
-// ---- Public contact page ----
-registerPageRoute('/contact', pageController.render('Contact/index'));
-registerPageRoute('/Contact/index.html', pageController.render('Contact/index'));
+// ---- Public marketing pages ----
+registerPageRoute('/about', pageController.render('About/index', marketingLocals('about')));
+registerPageRoute('/About/index.html', pageController.render('About/index', marketingLocals('about')));
+registerPageRoute('/privacy', pageController.render('Privacy/index', marketingLocals('privacy')));
+registerPageRoute('/Privacy/index.html', pageController.render('Privacy/index', marketingLocals('privacy')));
+registerPageRoute('/pricing', pageController.render('Pricing/index', marketingLocals('pricing')));
+registerPageRoute('/Pricing/index.html', pageController.render('Pricing/index', marketingLocals('pricing')));
+registerPageRoute('/contact', pageController.render('Contact/index', marketingLocals('contact')));
+registerPageRoute('/Contact/index.html', pageController.render('Contact/index', marketingLocals('contact')));
 
 registerPageRoute(
   '/Quiz/student-quiz.html',

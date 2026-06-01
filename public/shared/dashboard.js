@@ -172,6 +172,7 @@ const Dash = {
       </div>
       <nav class="dash-nav">${nav}</nav>
       <div class="spacer"></div>
+      <a href="/" class="back-home"><span class="ic">${this.icon('home')}</span> Back to Home</a>
       <a href="/logout" class="signout"><span class="ic">${this.icon('log-out')}</span> Sign Out</a>`;
   },
 

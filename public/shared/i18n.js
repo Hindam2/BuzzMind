@@ -20,6 +20,7 @@
     'Analytics': 'التحليلات',
     'Professors': 'الأساتذة',
     'Sign Out': 'تسجيل الخروج',
+    'Back to Home': 'العودة إلى الرئيسية',
     'Dashboard': 'لوحة التحكم',
     'Student': 'طالب',
     'Professor': 'أستاذ',
@@ -152,6 +153,147 @@
     'Search name, email, department...': 'ابحث بالاسم أو البريد أو القسم...',
     'Accounts are created instantly. Share the generated password with the professor.':
       'يتم إنشاء الحسابات فورًا. شارك كلمة المرور المُولَّدة مع الأستاذ.',
+
+    // ----- Marketing nav + footer -----
+    'About': 'من نحن',
+    'Pricing': 'الأسعار',
+    'Contact': 'تواصل معنا',
+    'Privacy': 'الخصوصية',
+    'Company': 'الشركة',
+    'Get started': 'ابدأ الآن',
+    'Privacy & Policy': 'الخصوصية والسياسة',
+
+    // ----- About page -----
+    'Our story': 'قصتنا',
+    'We make learning feel like': 'نجعل التعلّم يبدو وكأنه',
+    'play': 'لعب',
+    'BuzzMind turns every classroom into a high-energy game show. We help professors create interactive quizzes and help students learn faster by actually having fun.':
+      'يحوّل BuzzMind كل فصل دراسي إلى برنامج ألعاب مفعم بالحيوية. نساعد الأساتذة على إنشاء اختبارات تفاعلية ونساعد الطلاب على التعلّم بشكل أسرع عبر الاستمتاع فعلاً.',
+    'Why we built BuzzMind': 'لماذا أنشأنا BuzzMind',
+    'Lectures are easy to forget. Games are hard to forget. We built BuzzMind so educators can harness that energy — live quizzes, instant feedback, and friendly competition that keeps every student engaged from the first question to the last.':
+      'من السهل نسيان المحاضرات، أما الألعاب فيصعب نسيانها. أنشأنا BuzzMind ليتمكّن المعلمون من تسخير تلك الطاقة — اختبارات مباشرة، وتغذية راجعة فورية، ومنافسة ودّية تُبقي كل طالب متفاعلاً من السؤال الأول حتى الأخير.',
+    'Play to learn': 'العب لتتعلّم',
+    'Points, streaks, and live leaderboards turn revision into a game students want to win.':
+      'النقاط والسلاسل ولوحات الصدارة المباشرة تحوّل المراجعة إلى لعبة يريد الطلاب الفوز بها.',
+    'Built for classrooms': 'مصمّم للفصول الدراسية',
+    'Designed with real professors so it fits how you actually teach, assess, and track progress.':
+      'صُمّم بمشاركة أساتذة حقيقيين ليناسب طريقتك الفعلية في التدريس والتقييم وتتبّع التقدّم.',
+    'Insightful by design': 'تحليلات مدمجة بالتصميم',
+    'Every game produces clear reports, so you know exactly who needs help and where.':
+      'كل لعبة تُنتج تقارير واضحة، لتعرف بدقّة من يحتاج إلى مساعدة وأين.',
+    'Quizzes played': 'اختبارات لُعبت',
+    'Classrooms': 'الفصول الدراسية',
+    'Questions answered': 'أسئلة تمت الإجابة عنها',
+    'Teacher satisfaction': 'رضا المعلمين',
+    'Ready to join the fun?': 'مستعد للانضمام إلى المرح؟',
+    'Create your free account and run your first live quiz in minutes.':
+      'أنشئ حسابك المجاني وأطلِق أول اختبار مباشر لك في دقائق.',
+    'See pricing': 'اطّلع على الأسعار',
+
+    // ----- Privacy page -----
+    'Legal': 'قانوني',
+    'Privacy &': 'الخصوصية و',
+    'Policy': 'السياسة',
+    'Your privacy matters to us. This page explains what we collect, why we collect it, and the choices you have.':
+      'خصوصيتك تهمّنا. توضّح هذه الصفحة ما نجمعه ولماذا نجمعه والخيارات المتاحة لك.',
+    'Last updated: June 1, 2026': 'آخر تحديث: 1 يونيو 2026',
+    'Information we collect': 'المعلومات التي نجمعها',
+    'When you create an account we collect the name, username, and email address you provide. As you use BuzzMind we also store the quizzes, classes, assignments, and game results needed to run the platform.':
+      'عند إنشاء حساب نجمع الاسم واسم المستخدم والبريد الإلكتروني الذي تقدّمه. وأثناء استخدامك BuzzMind نخزّن أيضًا الاختبارات والفصول والواجبات ونتائج الألعاب اللازمة لتشغيل المنصة.',
+    'How we use your data': 'كيف نستخدم بياناتك',
+    'We use your information to operate the service, personalize your dashboard, show your progress, and improve our quizzes and features. We do not use your data to build advertising profiles.':
+      'نستخدم معلوماتك لتشغيل الخدمة وتخصيص لوحة تحكمك وعرض تقدّمك وتحسين اختباراتنا وميزاتنا. لا نستخدم بياناتك لبناء ملفات إعلانية.',
+    'Cookies & sessions': 'ملفات تعريف الارتباط والجلسات',
+    'We use a single session cookie to keep you signed in securely. We do not use third-party advertising or cross-site tracking cookies.':
+      'نستخدم ملف تعريف ارتباط واحدًا للجلسة لإبقائك مسجّل الدخول بأمان. لا نستخدم ملفات تتبّع إعلانية تابعة لجهات خارجية أو عبر المواقع.',
+    'How we share information': 'كيف نشارك المعلومات',
+    'We never sell your personal data. Information is shared only in these limited cases:':
+      'لا نبيع بياناتك الشخصية أبدًا. تتم مشاركة المعلومات فقط في هذه الحالات المحدودة:',
+    'With your professors or institution, to deliver classes and grades.':
+      'مع أساتذتك أو مؤسستك، لتقديم الفصول والدرجات.',
+    'With trusted service providers that host the platform on our behalf.':
+      'مع مزوّدي خدمات موثوقين يستضيفون المنصة نيابةً عنا.',
+    'When required by law or to protect the safety of our users.':
+      'عندما يقتضي القانون ذلك أو لحماية سلامة مستخدمينا.',
+    'Your rights': 'حقوقك',
+    'You can view, edit, or delete your account information at any time from your settings page. You may also contact us to request a copy of your data or to close your account.':
+      'يمكنك عرض معلومات حسابك أو تعديلها أو حذفها في أي وقت من صفحة الإعدادات. كما يمكنك التواصل معنا لطلب نسخة من بياناتك أو لإغلاق حسابك.',
+    'Data security': 'أمن البيانات',
+    'Passwords are stored using strong one-way hashing, and access to personal data is restricted to authorized staff. No system is perfectly secure, but we work hard to protect your information.':
+      'تُخزَّن كلمات المرور باستخدام تجزئة قوية أحادية الاتجاه، والوصول إلى البيانات الشخصية مقصور على الموظفين المصرّح لهم. لا يوجد نظام آمن تمامًا، لكننا نعمل بجدّ لحماية معلوماتك.',
+    'Questions about this policy?': 'أسئلة حول هذه السياسة؟',
+    'If you have any questions about how we handle your data, we are happy to help.':
+      'إذا كان لديك أي أسئلة حول كيفية تعاملنا مع بياناتك، فيسعدنا مساعدتك.',
+    'Contact our team': 'تواصل مع فريقنا',
+
+    // ----- Pricing page -----
+    'For professors': 'للأساتذة',
+    'Plans that grow with your': 'خطط تنمو مع',
+    'classroom': 'فصلك الدراسي',
+    'Start free, upgrade when your classes get bigger, and cancel anytime. Every plan includes live games, quizzes, and leaderboards.':
+      'ابدأ مجانًا، وارتقِ بالخطة عندما تكبر فصولك، وألغِ في أي وقت. تتضمّن كل خطة ألعابًا مباشرة واختبارات ولوحات صدارة.',
+    'Monthly': 'شهري',
+    'Annual': 'سنوي',
+    'Save 20%': 'وفّر 20%',
+    'Starter': 'المبتدئ',
+    'For trying things out and small classes.': 'لتجربة المنصة والفصول الصغيرة.',
+    '/mo': '/شهر',
+    'Free forever': 'مجاني للأبد',
+    'Up to 2 classes': 'حتى فصلين',
+    'Up to 50 students': 'حتى 50 طالبًا',
+    'Core quiz builder': 'منشئ الاختبارات الأساسي',
+    'Live games & PINs': 'ألعاب مباشرة ورموز دخول',
+    'Community support': 'دعم المجتمع',
+    'Get started free': 'ابدأ مجانًا',
+    'Most popular': 'الأكثر شيوعًا',
+    'Pro': 'برو',
+    'For active educators running regular live quizzes.':
+      'للمعلمين النشطين الذين يديرون اختبارات مباشرة بانتظام.',
+    'Billed monthly': 'يُدفع شهريًا',
+    'Billed annually': 'يُدفع سنويًا',
+    'Unlimited classes': 'فصول غير محدودة',
+    'Up to 500 students': 'حتى 500 طالب',
+    'Quiz library & AI import': 'مكتبة اختبارات واستيراد بالذكاء الاصطناعي',
+    'Reports & analytics': 'التقارير والتحليلات',
+    'Assignments & grading': 'الواجبات والتقييم',
+    'Priority email support': 'دعم بريد إلكتروني ذو أولوية',
+    'Choose Pro': 'اختر برو',
+    'Campus': 'الحرم الجامعي',
+    'For departments and whole schools.': 'للأقسام والمدارس بأكملها.',
+    'Everything in Pro': 'كل ما في برو',
+    'Unlimited students': 'طلاب غير محدودين',
+    'Admin dashboard': 'لوحة تحكم المدير',
+    'Custom branding': 'علامة تجارية مخصصة',
+    'Onboarding & training': 'الإعداد والتدريب',
+    'Dedicated support': 'دعم مخصص',
+    'Contact sales': 'تواصل مع المبيعات',
+    "These prices are for preview only — online billing isn't connected yet. Pick a plan and our team will set you up.":
+      'هذه الأسعار للعرض فقط — لم يتم ربط الدفع الإلكتروني بعد. اختر خطة وسيتولّى فريقنا إعدادك.',
+    'Still deciding?': 'ما زلت تفكر؟',
+    "Start on the free Starter plan today — no card required — and upgrade whenever you're ready.":
+      'ابدأ اليوم بخطة المبتدئ المجانية — دون الحاجة إلى بطاقة — وارتقِ متى كنت مستعدًا.',
+    'Create free account': 'أنشئ حسابًا مجانيًا',
+    'Talk to us': 'تحدّث إلينا',
+
+    // ----- Contact page -----
+    'Get in': 'تواصل',
+    'touch': 'معنا',
+    "Questions, problems, or feedback? Send our admin team a message and we'll get back to you.":
+      'أسئلة أو مشكلات أو ملاحظات؟ أرسل رسالة إلى فريق الإدارة وسنعاود التواصل معك.',
+    "We'd love to hear from you": 'يسعدنا أن نسمع منك',
+    "Whether you're a professor sizing up a plan or a student who hit a snag, drop us a note. Your message goes straight to the BuzzMind admin inbox.":
+      'سواء كنت أستاذًا يقيّم خطة أو طالبًا واجه مشكلة، أرسل لنا رسالة. تصل رسالتك مباشرة إلى صندوق وارد إدارة BuzzMind.',
+    'Send a message': 'أرسل رسالة',
+    'The form below reaches our admin team directly.': 'يصل النموذج أدناه إلى فريق الإدارة مباشرة.',
+    'Response time': 'وقت الاستجابة',
+    'We usually reply within one business day.': 'نردّ عادةً خلال يوم عمل واحد.',
+    'Anything goes': 'كل شيء مرحّب به',
+    'Account, billing, or quiz questions are all welcome.': 'أسئلة الحساب أو الفوترة أو الاختبارات، جميعها مرحّب بها.',
+    'Name, email and message are required.': 'الاسم والبريد الإلكتروني والرسالة مطلوبة.',
+    'Message sent! The admin team will get back to you.': 'تم إرسال الرسالة! سيتواصل معك فريق الإدارة.',
+    'Not signed in? You can still send a message.': 'لست مسجّلاً الدخول؟ لا يزال بإمكانك إرسال رسالة.',
+    'Could not send your message.': 'تعذّر إرسال رسالتك.',
+    'Signed in as': 'مُسجّل الدخول باسم',
   };
 
   var KEY = 'bm_lang';
@@ -186,11 +328,19 @@
     var raw = node.nodeValue;
     if (!raw || seenText.has(node)) return;
     var t = raw.trim();
-    if (!t || !AR.hasOwnProperty(t) || skip(node)) return;
+    if (!t || skip(node)) return;
+    // Match exact text first; fall back to whitespace-collapsed text so that
+    // paragraphs wrapped across multiple source lines still match the keys.
+    var key = AR.hasOwnProperty(t) ? t : null;
+    if (!key) {
+      var norm = t.replace(/\s+/g, ' ');
+      if (norm !== t && AR.hasOwnProperty(norm)) key = norm;
+    }
+    if (!key) return;
     var lead = raw.slice(0, raw.length - raw.replace(/^\s+/, '').length);
     var trail = raw.slice(raw.replace(/\s+$/, '').length);
     seenText.set(node, raw);
-    node.nodeValue = lead + AR[t] + trail;
+    node.nodeValue = lead + AR[key] + trail;
   }
 
   function translateAttrs(el) {

@@ -104,11 +104,9 @@ async function registerUser(req, res) {
       Email: emailNorm,
     };
 
-    // If the signup came with a preferred role (from ?role=...), apply it if valid
-    if (
-      preferredRole &&
-      ['professor', 'student', 'admin'].includes(preferredRole)
-    ) {
+    // If the signup came with a preferred role (from ?role=...), apply it if valid.
+    // Only student/professor are self-selectable; admin is never publicly assignable.
+    if (preferredRole && ['professor', 'student'].includes(preferredRole)) {
       userData.Role = preferredRole;
     }
 
@@ -163,7 +161,7 @@ async function setRole(req, res) {
   try {
     const { role } = req.body;
 
-    if (!role || !['professor', 'student', 'admin'].includes(role)) {
+    if (!role || !['professor', 'student'].includes(role)) {
       return res.redirect('/role?error=missing_role');
     }
 

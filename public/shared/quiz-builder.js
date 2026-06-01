@@ -125,6 +125,40 @@
     if (last) last.focus();
   });
 
+  const importBtn = document.getElementById('importTriviaBtn');
+  if (importBtn) {
+    importBtn.addEventListener('click', async () => {
+      const amount = Number(document.getElementById('trAmount').value) || 5;
+      const difficulty = document.getElementById('trDifficulty').value;
+      importBtn.disabled = true;
+      try {
+        const { questions: imported } = await BuzzMindAPI.importTrivia({ amount, difficulty });
+        if (!imported || !imported.length) {
+          Dash.toast('No questions returned. Try again.', 'error');
+          return;
+        }
+        syncFromDom();
+        const mapped = imported.map((q) => ({
+          text: q.text || '',
+          imageUrl: '',
+          answers: (q.answers || ['', '', '', '']).slice(0, 4),
+          correctIndex: Number.isInteger(q.correctIndex) ? q.correctIndex : 0,
+        }));
+        const onlyBlank =
+          questions.length === 1 &&
+          !questions[0].text.trim() &&
+          questions[0].answers.every((a) => !a.trim());
+        questions = onlyBlank ? mapped : questions.concat(mapped);
+        render();
+        Dash.toast(`Imported ${mapped.length} question${mapped.length === 1 ? '' : 's'} from Open Trivia DB.`);
+      } catch (err) {
+        Dash.toast(err.message || 'Import failed', 'error');
+      } finally {
+        importBtn.disabled = false;
+      }
+    });
+  }
+
   function collect() {
     syncFromDom();
     const title = document.getElementById('quizTitle').value.trim();

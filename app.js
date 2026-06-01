@@ -94,7 +94,23 @@ app.use('/api/overview', overviewRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/chat', chatRoutes);
 
+app.use((req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.status(404).send('Page not found');
+});
+
 app.use((err, req, res, next) => {
+  const isMulter = err && err.name === 'MulterError';
+  const isUploadFilter =
+    err && /^(Only images allowed|Unsupported file type)/.test(err.message || '');
+  if (isMulter || isUploadFilter) {
+    const msg =
+      err.code === 'LIMIT_FILE_SIZE' ? 'File is too large.' : err.message || 'Upload failed.';
+    if (req.path.startsWith('/api/')) return res.status(400).json({ error: msg });
+    return res.status(400).send(msg);
+  }
   console.error('Global error handler:', err.stack || err);
   if (req.path.startsWith('/api/')) {
     return res.status(500).json({ error: 'Internal server error' });

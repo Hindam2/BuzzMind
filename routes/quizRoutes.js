@@ -6,7 +6,72 @@ const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 router.use(requireAuth);
+
+// External API: import ready-made questions from the Open Trivia Database.
+router.get('/import/trivia', requireRole('professor', 'admin'), async (req, res, next) => {
+  try {
+    const amount = Math.min(Math.max(parseInt(req.query.amount, 10) || 5, 1), 20);
+    const difficulty = ['easy', 'medium', 'hard'].includes(req.query.difficulty)
+      ? req.query.difficulty
+      : '';
+    const params = new URLSearchParams({
+      amount: String(amount),
+      type: 'multiple',
+      encode: 'url3986',
+    });
+    if (difficulty) params.set('difficulty', difficulty);
+
+    let data;
+    try {
+      const response = await fetch(`https://opentdb.com/api.php?${params.toString()}`, {
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!response.ok) {
+        return res.status(502).json({ error: 'Trivia service is unavailable right now.' });
+      }
+      data = await response.json();
+    } catch (fetchErr) {
+      return res
+        .status(502)
+        .json({ error: 'Could not reach the trivia service. Please try again.' });
+    }
+
+    if (data.response_code !== 0 || !Array.isArray(data.results) || !data.results.length) {
+      return res
+        .status(502)
+        .json({ error: 'No trivia questions were returned. Try a smaller amount.' });
+    }
+
+    const dec = (s) => decodeURIComponent(String(s));
+    const questions = data.results.map((item) => {
+      const correct = dec(item.correct_answer);
+      const answers = shuffle([correct, ...(item.incorrect_answers || []).map(dec)]).slice(0, 4);
+      while (answers.length < 4) answers.push('—');
+      return {
+        text: dec(item.question),
+        imageUrl: '',
+        answers,
+        correctIndex: Math.max(0, answers.indexOf(correct)),
+        category: dec(item.category || ''),
+        difficulty: item.difficulty || '',
+      };
+    });
+
+    res.json({ questions, source: 'Open Trivia Database' });
+  } catch (err) {
+    next(err);
+  }
+});
 
 router.get('/library', async (req, res, next) => {
   try {

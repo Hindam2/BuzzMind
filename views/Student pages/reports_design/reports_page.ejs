@@ -1,217 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BuzzMind - Reports</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=DM+Sans:wght@400;600&display=swap"
-      rel="stylesheet" />
-    <link rel="stylesheet" href="/Student pages/Home Page/style.css" />
-    <link
-      rel="stylesheet"
-      href="/Student pages/reports_design/reports_style.css" />
-    <script src="/Student pages/reports_design/report_script.js" defer></script>
-  </head>
-  <body>
-    <nav class="navbar">
-      <a href="#" class="logo">BuzzMind</a>
-      <ul class="nav-links">
-        <li><a href="/Student pages/Home Page/Index.html">Discover</a></li>
-        <li><a href="/Student pages/Libary/index.html">Library</a></li>
-        <li><a href="#" class="active">Reports</a></li>
-      </ul>
-      <div class="nav-actions">
-        <a href="/Student pages/Settings page/Settings.html" class="avatar"
-          >U</a
-        >
-      </div>
-    </nav>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BuzzMind · Reports</title>
+  <link rel="stylesheet" href="/shared/dashboard.css" />
+</head>
+<body>
+<div class="dash-shell">
+  <%- include('../../partials/student-sidebar', { active: 'reports' }) %>
 
-    <h1>Performance <i>DeepDive</i></h1>
-    <p id="p1">
-      Your quizzes are making waves! Here is how your audience interacted with
-      your content this week.
-    </p>
-
-    <br />
-
-    <div class="stat-cards">
-      <div class="card-players">
-        <div class="fbox-label">Total players</div>
-        <div><b class="fbox-number">12,408</b></div>
-      </div>
-      <div class="card-accuracy">
-        <div class="fbox-label">Accuracy</div>
-        <div><b class="fbox-number">78.2%</b></div>
-      </div>
-      <div class="card-score">
-        <div class="fbox-label">Average score</div>
-        <div><b class="fbox-number">4,850</b></div>
-        <div>points per session</div>
+  <div class="dash-main">
+    <div class="dash-top">
+      <div>
+        <h1>Performance Reports</h1>
+        <div class="sub">A deep dive into how you have done across every quiz.</div>
       </div>
     </div>
 
-    <br />
-
-    <div class="recent-header">
-      <b class="section-title">Recent Sessions</b>
-    </div>
-
-    <br />
-
-    <div class="session-list">
-      <div
-        class="rs-row"
-        data-title="World Capitals Challenge"
-        data-meta="Played 2 hours ago • Live Game"
-        data-icon=""
-        data-icon-color="purple"
-        data-players="42"
-        data-accuracy="84%"
-        data-score="4,850">
-        <div class="session-info">
-          <div class="rs-icon purple"></div>
-          <div>
-            World Capitals Challenge
-            <div class="rs-meta">Played 2 hours ago • Live Game</div>
-          </div>
+    <div class="dash-content">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-ic b"><span class="ic" data-icon="list-checks"></span></div>
+          <div><div class="lbl">Quizzes taken</div><div class="num" id="sTaken">—</div></div>
         </div>
-        <div class="session-stats">
-          <div class="rs-stat">
-            PLAYERS
-            <div class="stat-number">42</div>
-          </div>
-          <div class="rs-stat">
-            AVG ACCURACY
-            <div class="stat-accuracy">84%</div>
-          </div>
-          <div><button class="btn-details">View Details</button></div>
+        <div class="stat-card">
+          <div class="stat-ic g"><span class="ic" data-icon="check"></span></div>
+          <div><div class="lbl">Avg. accuracy</div><div class="num g" id="sAvg">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ic a"><span class="ic" data-icon="award"></span></div>
+          <div><div class="lbl">Best score</div><div class="num" id="sBest">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-ic"><span class="ic" data-icon="trophy"></span></div>
+          <div><div class="lbl">Total points</div><div class="num" id="sPts">—</div></div>
         </div>
       </div>
 
-      <div
-        class="rs-row green-border"
-        data-title="Periodic Table Basics"
-        data-meta="Played 5 hours ago • Assignment"
-        data-icon=""
-        data-icon-color="green"
-        data-players="128"
-        data-accuracy="62%"
-        data-score="3,210">
-        <div class="session-info">
-          <div class="rs-icon green"></div>
-          <div>
-            Periodic Table Basics
-            <div class="rs-meta">Played 5 hours ago • Assignment</div>
-          </div>
+      <div class="card" style="margin-top:18px">
+        <div class="row-between" style="margin-bottom:14px">
+          <h3 style="margin:0">Quiz history</h3>
+          <span class="badge b-muted" id="histCount">0 quizzes</span>
         </div>
-        <div class="session-stats">
-          <div class="rs-stat">
-            PLAYERS
-            <div class="stat-number">128</div>
-          </div>
-          <div class="rs-stat">
-            AVG ACCURACY
-            <div class="stat-accuracy">62%</div>
-          </div>
-          <div><button class="btn-details">View Details</button></div>
-        </div>
-      </div>
-
-      <div
-        class="rs-row blue-border"
-        data-title="90s Pop Trivia"
-        data-meta="Played yesterday • Solo"
-        data-icon=""
-        data-icon-color="blue"
-        data-players="15"
-        data-accuracy="91%"
-        data-score="5,500">
-        <div class="session-info">
-          <div class="rs-icon blue"></div>
-          <div>
-            90s Pop Trivia
-            <div class="rs-meta">Played yesterday • Solo</div>
-          </div>
-        </div>
-        <div class="session-stats">
-          <div class="rs-stat">
-            PLAYERS
-            <div class="stat-number">15</div>
-          </div>
-          <div class="rs-stat">
-            AVG ACCURACY
-            <div class="stat-accuracy">91%</div>
-          </div>
-          <div><button class="btn-details">View Details</button></div>
+        <div id="histWrap">
+          <div class="empty">Loading your reports…</div>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Details Modal -->
-    <div id="details-modal" class="pin-modal">
-      <div class="pin-box details-box">
-        <div id="details-icon" class="rs-icon purple details-icon"></div>
-        <h2 id="details-title">World Capitals Challenge</h2>
-        <p id="details-meta" class="rs-meta details-meta">
-          Played 2 hours ago • Live Game
-        </p>
-        <div class="details-stats">
-          <div class="details-stat">
-            <div class="details-stat-label">PLAYERS</div>
-            <div class="details-stat-value" id="details-players">42</div>
-          </div>
-          <div class="details-stat">
-            <div class="details-stat-label">AVG ACCURACY</div>
-            <div class="details-stat-value green" id="details-accuracy">
-              84%
-            </div>
-          </div>
-          <div class="details-stat">
-            <div class="details-stat-label">AVG SCORE</div>
-            <div class="details-stat-value" id="details-score">4,850</div>
-          </div>
-        </div>
-        <button class="pin-cancel" id="details-close">Close</button>
-      </div>
-    </div>
+<script src="/buzzmind-api.js"></script>
+<script src="/buzzmind-session.js"></script>
+<script src="/shared/dashboard.js"></script>
+<script>
+(function () {
+  const E = Dash.escapeHTML;
 
-    <!-- Archive Modal -->
-    <div id="archive-modal" class="pin-modal">
-      <div class="pin-box details-box">
-        <h2>Session Archive</h2>
-        <p class="rs-meta archive-meta">Your past sessions</p>
-        <div class="archive-list">
-          <div class="archive-item">
-            <span>Geography Blitz</span>
-            <span class="rs-meta">3 days ago</span>
-          </div>
-          <div class="archive-item">
-            <span>Biology Basics</span>
-            <span class="rs-meta">5 days ago</span>
-          </div>
-          <div class="archive-item">
-            <span>Ancient History</span>
-            <span class="rs-meta">1 week ago</span>
-          </div>
-          <div class="archive-item">
-            <span>Math Madness</span>
-            <span class="rs-meta">2 weeks ago</span>
-          </div>
-        </div>
-        <button class="pin-cancel" id="archive-close">Close</button>
-      </div>
-    </div>
+  function accBadge(a) {
+    const cls = a >= 80 ? 'b-green' : a >= 50 ? 'b-amber' : 'b-red';
+    return `<span class="badge ${cls}">${a}%</span>`;
+  }
 
-    <div id="pin-modal" class="pin-modal">
-      <div class="pin-box">
-        <h2>Enter your PIN</h2>
-        <input type="password" id="pin-input" placeholder="Enter PIN" />
-        <p id="pin-error" class="pin-error"></p>
-        <button class="pin-confirm">Confirm</button>
-        <button class="pin-cancel">Cancel</button>
-      </div>
-    </div>
-  </body>
+  function render(list) {
+    const taken = list.length;
+    const avg = taken ? Math.round(list.reduce((s, q) => s + (q.accuracy || 0), 0) / taken) : 0;
+    const best = list.reduce((m, q) => Math.max(m, Number(q.score || 0)), 0);
+    const pts = list.reduce((s, q) => s + Number(q.score || 0), 0);
+    document.getElementById('sTaken').textContent = taken;
+    document.getElementById('sAvg').textContent = avg + '%';
+    document.getElementById('sBest').textContent = best.toLocaleString();
+    document.getElementById('sPts').textContent = pts.toLocaleString();
+    document.getElementById('histCount').textContent = `${taken} quiz${taken === 1 ? '' : 'zes'}`;
+
+    const wrap = document.getElementById('histWrap');
+    if (!taken) {
+      wrap.innerHTML = `<div class="empty"><div class="big">${Dash.icon('bar-chart')}</div>No quiz results yet. Play a game from Discover to see your performance here.</div>`;
+      return;
+    }
+    const rows = list
+      .map(
+        (q) => `<tr>
+          <td><strong>${E(q.quizTitle || 'Untitled quiz')}</strong></td>
+          <td>${q.playedAt ? Dash.fmtDate(q.playedAt) : '—'}</td>
+          <td>${q.totalQuestions || '—'}</td>
+          <td>${accBadge(q.accuracy ?? 0)}</td>
+          <td><strong>${Number(q.score || 0).toLocaleString()}</strong></td>
+        </tr>`,
+      )
+      .join('');
+    wrap.innerHTML = `<table class="dtable">
+      <thead><tr><th>Quiz</th><th>Date</th><th>Questions</th><th>Accuracy</th><th>Score</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  async function load() {
+    try {
+      const res = await BuzzMindAPI.getReports();
+      render(Array.isArray(res) ? res : []);
+    } catch (err) {
+      document.getElementById('histWrap').innerHTML = `<div class="empty">${E(err.message || 'Could not load reports.')}</div>`;
+    }
+  }
+
+  Dash.boot('reports');
+  load();
+})();
+</script>
+</body>
 </html>

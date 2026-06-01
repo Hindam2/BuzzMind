@@ -54,16 +54,90 @@
     bodyEl.scrollTop = bodyEl.scrollHeight;
   }
 
+  function ensureProfileModal() {
+    if (document.getElementById('chatProfileModal')) return;
+    const back = document.createElement('div');
+    back.className = 'modal-back';
+    back.id = 'chatProfileModal';
+    back.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cpName">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+          <div class="avatar" id="cpAvatar" style="width:56px;height:56px;font-size:20px">U</div>
+          <div style="min-width:0">
+            <h2 id="cpName" style="margin:0 0 4px">—</h2>
+            <span class="badge" id="cpRole">—</span>
+          </div>
+        </div>
+        <div class="field"><label>Email</label><div id="cpEmail" style="font-size:14px;word-break:break-all">—</div></div>
+        <div class="field"><label>Department</label><div id="cpDept" style="font-size:14px">—</div></div>
+        <div class="modal-actions">
+          <button class="btn" type="button" id="cpClose">Close</button>
+        </div>
+      </div>`;
+    document.body.appendChild(back);
+    back.addEventListener('click', (e) => { if (e.target === back) Dash.closeModal('chatProfileModal'); });
+    back.querySelector('#cpClose').addEventListener('click', () => Dash.closeModal('chatProfileModal'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && back.classList.contains('open')) Dash.closeModal('chatProfileModal');
+    });
+  }
+
+  function openProfile(contact) {
+    if (!contact) return;
+    ensureProfileModal();
+    const av = document.getElementById('cpAvatar');
+    av.textContent = Dash.initials(contact.name || '?');
+    av.style.background = Dash.avatarColor(contact.id);
+    document.getElementById('cpName').textContent = contact.name || 'Unknown';
+    const roleEl = document.getElementById('cpRole');
+    const role = contact.role || 'user';
+    roleEl.textContent = role;
+    roleEl.className = `badge role-${role}`;
+    document.getElementById('cpEmail').textContent = contact.email || 'Not available';
+    document.getElementById('cpDept').textContent = contact.department || 'Not available';
+    Dash.openModal('chatProfileModal');
+  }
+
+  function renderHead(contact) {
+    if (!contact) { headEl.textContent = 'Conversation'; return; }
+    const role = contact.role || '';
+    headEl.innerHTML = `
+      <div style="display:flex;align-items:center;gap:12px;justify-content:space-between">
+        <div id="chatHeadId" role="button" tabindex="0" title="View profile"
+             style="display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer">
+          <div class="avatar" style="width:36px;height:36px;background:${Dash.avatarColor(contact.id)}">${E(Dash.initials(contact.name || '?'))}</div>
+          <div style="min-width:0">
+            <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(contact.name || 'Conversation')}</div>
+            ${role ? `<span class="badge role-${E(role)}">${E(role)}</span>` : ''}
+          </div>
+        </div>
+        <button class="btn" type="button" id="chatProfileBtn"><span class="ic" data-icon="user"></span> Profile</button>
+      </div>`;
+    const open = () => openProfile(contact);
+    const idEl = document.getElementById('chatHeadId');
+    idEl.addEventListener('click', open);
+    idEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+    });
+    document.getElementById('chatProfileBtn').addEventListener('click', open);
+    Dash.hydrateIcons(headEl);
+  }
+
   async function openConversation(id) {
     activeId = id;
     const contact = contacts.find((c) => c.id === id);
-    headEl.textContent = contact ? contact.name : 'Conversation';
+    renderHead(contact);
     bodyEl.innerHTML = `<div class="empty" style="margin:auto">Loading…</div>`;
     formEl.style.display = 'flex';
     renderContacts();
     try {
       const data = await BuzzMindAPI.getConversation(id);
-      headEl.innerHTML = `${E(data.contact.name)} <span class="badge role-${E(data.contact.role)}" style="margin-left:8px">${E(data.contact.role)}</span>`;
+      if (contact && data.contact) {
+        contact.name = data.contact.name || contact.name;
+        contact.role = data.contact.role || contact.role;
+        contact.email = data.contact.email || contact.email;
+      }
+      renderHead(contact || data.contact);
       bodyEl.innerHTML = data.messages.length
         ? data.messages.map(bubble).join('')
         : `<div class="empty" style="margin:auto">Say hello &#128075;</div>`;

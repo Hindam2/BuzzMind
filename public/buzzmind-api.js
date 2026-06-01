@@ -80,6 +80,12 @@ const BuzzMindAPI = {
     return this.request(`/api/quizzes/${quizId}/launch`, { method: 'POST' });
   },
 
+  importTrivia({ amount = 5, difficulty = '' } = {}) {
+    const qs = new URLSearchParams({ amount: String(amount) });
+    if (difficulty) qs.set('difficulty', difficulty);
+    return this.request(`/api/quizzes/import/trivia?${qs.toString()}`);
+  },
+
   joinSession(pin, displayName) {
     const body = { pin };
     if (displayName) body.displayName = displayName;

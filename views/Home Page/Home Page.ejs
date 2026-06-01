@@ -12,12 +12,17 @@
         <div class="nav-container">
             <div class="logo">BuzzMind</div>
             <div class="nav-actions">
+                <button type="button" class="lang-toggle" data-lang-toggle data-no-i18n aria-label="Switch language">
+                    <span class="ic"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span>
+                    <span class="lt-label">العربية</span>
+                </button>
                 <% if (user) { %>
-                    <a href="/role" class="btn btn-secondary">Dashboard</a>
+                    <span class="nav-greet"><span class="greet-hi">Hi,</span> <span class="greet-name" data-no-i18n><%= user.Name %></span></span>
+                    <a href="<%= dashHref %>" class="btn btn-secondary">Dashboard</a>
                     <a href="/logout" class="btn btn-primary">Logout</a>
                 <% } else { %>
-                    <a href="/login" class="btn btn-secondary">Join</a>
-                    <a href="/register" class="btn btn-primary">Host Game</a>
+                    <a href="/login" class="btn btn-secondary">Log in</a>
+                    <a href="/register" class="btn btn-primary">Sign up</a>
                 <% } %>
             </div>
         </div>
@@ -31,11 +36,15 @@
                 <span class="hero-highlight">Learning!</span>
             </h1>
             <p class="hero-description">
-                Turn every classroom into a kinetic playground. Interactive quizzes that feel like games, and learning that feels like winning.
+                Turn every classroom into a game. Interactive quizzes that make learning feel like winning.
             </p>
             <div class="hero-buttons">
-                <a href="/login" class="btn btn-join">Join a Game</a>
-                <a href="/register" class="btn btn-create">Create for Free</a>
+                <% if (user) { %>
+                    <a href="<%= dashHref %>" class="btn btn-create">Go to Dashboard</a>
+                <% } else { %>
+                    <a href="/register" class="btn btn-create">Sign up free</a>
+                    <a href="/login" class="btn btn-join">Log in</a>
+                <% } %>
             </div>
         </div>
         <!-- Illustration removed per design request (floating shapes) -->
@@ -99,8 +108,8 @@
             <p class="cta-description">Join thousands of educators and students already leveling up their learning experience.</p>
             <div class="cta-buttons">
                 <% if (!user) { %>
-                    <a href="/register?role=student" class="btn btn-primary btn-lg">Join as Student</a>
-                    <a href="/register?role=professor" class="btn btn-secondary btn-lg">Join as Professor</a>
+                    <a href="/register?role=student" class="btn btn-primary btn-lg">Sign up as a Student</a>
+                    <a href="/register?role=professor" class="btn btn-secondary btn-lg">Sign up as a Professor</a>
                 <% } %>
             </div>
         </div>
@@ -117,5 +126,6 @@
     </footer>
 
     <script src="Home Page.js"></script>
+    <script src="/shared/i18n.js"></script>
 </body>
 </html>

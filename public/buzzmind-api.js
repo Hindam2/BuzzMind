@@ -335,3 +335,15 @@ const BuzzMindAPI = {
 };
 
 if (typeof window !== 'undefined') window.BuzzMindAPI = BuzzMindAPI;
+
+// Load shared i18n (English ⇄ Arabic) on every page that includes this client.
+if (
+  typeof document !== 'undefined' &&
+  !window.__buzzI18n &&
+  !document.querySelector('script[data-i18n-loader]')
+) {
+  const i18nScript = document.createElement('script');
+  i18nScript.src = '/shared/i18n.js';
+  i18nScript.setAttribute('data-i18n-loader', '');
+  document.head.appendChild(i18nScript);
+}

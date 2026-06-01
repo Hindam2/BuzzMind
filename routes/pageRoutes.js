@@ -3,6 +3,7 @@ const express = require('express');
 const authController = require('../controllers/authController');
 const pageController = require('../controllers/pageController');
 const { requirePageAuth, redirectIfAuthenticated } = require('../middleware/auth');
+const { roleHome } = require('../utils/rolePaths');
 
 const router = express.Router();
 
@@ -40,9 +41,11 @@ registerPageRoute('/register', (req, res) => {
 });
 registerPageRoute(
   '/Home Page/Home Page.html',
-  pageController.render('Home Page/Home Page', (req) => ({
-    user: req.session.user || null,
-  })),
+  pageController.render('Home Page/Home Page', (req) => {
+    const user = req.user || null;
+    const dashHref = user ? (user.Role ? roleHome(user.Role) : '/role') : '/login';
+    return { user, dashHref };
+  }),
 );
 registerPageRoute('/Login Page/Login Page.html', (req, res) => {
   const qs = Object.keys(req.query).length

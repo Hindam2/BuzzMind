@@ -33,6 +33,18 @@ function emitClassLaunch(req, cls, payload) {
   });
 }
 
+function quizLaunchFilter(req, quizId) {
+  const filter = { _id: quizId };
+  if (req.user.Role !== 'admin') filter.professor = req.user._id;
+  return filter;
+}
+
+function classLaunchFilter(req, classId) {
+  const filter = { _id: classId };
+  if (req.user.Role !== 'admin') filter.professor = req.user._id;
+  return filter;
+}
+
 router.use(requireAuth);
 
 // External API: import ready-made questions from the Open Trivia Database.
@@ -228,18 +240,12 @@ router.delete('/:id', requireRole('professor', 'admin'), async (req, res, next) 
 router.post('/:id/launch', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
     const { classId } = req.body || {};
-    const quiz = await Quiz.findOne({
-      _id: req.params.id,
-      professor: req.user._id,
-    });
+    const quiz = await Quiz.findOne(quizLaunchFilter(req, req.params.id));
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
 
     let cls = null;
     if (classId) {
-      cls = await Class.findOne({
-        _id: classId,
-        professor: req.user._id,
-      });
+      cls = await Class.findOne(classLaunchFilter(req, classId));
       if (!cls) return res.status(404).json({ error: 'Class not found' });
       quiz.classId = cls._id;
     }

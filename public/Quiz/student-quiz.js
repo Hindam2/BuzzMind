@@ -14,9 +14,8 @@ let timerInterval = null; // reference to the countdown interval
 let timeLeft = 0; // seconds remaining for current question
 let answered = false; // has the student answered yet?
 let studentSocket = null;
+let livePoints = Number(sessionStorage.getItem('livePoints')) || 0;
 
-// Total time per question (from quiz-data.js)
-const QUESTION_TIME = QUIZ_DATA.totalTime;
 // Circumference of the SVG timer ring (2 * π * r, r=26)
 const RING_CIRCUMFERENCE = 163.4;
 
@@ -51,6 +50,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 function isCurrentLiveSession(payload) {
   if (!window.LIVE_SESSION_ID || !payload?.sessionId) return true;
   return String(payload.sessionId) === String(window.LIVE_SESSION_ID);
+}
+
+function isLiveQuiz() {
+  return !!window.LIVE_SESSION_ID;
+}
+
+function questionTime() {
+  return Number(QUIZ_DATA.totalTime) || 20;
 }
 
 function initLiveSocket() {
@@ -127,7 +134,7 @@ function loadQuestion(index) {
   if (feedback) feedback.style.display = 'none';
 
   // Start countdown timer
-  startTimer(QUESTION_TIME);
+  startTimer(questionTime());
 }
 
 /**
@@ -202,10 +209,14 @@ async function handleAnswer(selectedIndex) {
       });
       isCorrect = result.correct;
       question.correctIndex = result.correctIndex;
+      livePoints = Number(result.score) || livePoints;
+      sessionStorage.setItem('livePoints', livePoints);
       if (result.correct) score++;
     } catch (err) {
       console.error(err);
-      if (isCorrect) score++;
+      disableAnswers();
+      showWaitingFeedback(err.message || 'Could not submit your answer. Waiting for the professor...');
+      return;
     }
   } else if (isCorrect) {
     score++;
@@ -217,8 +228,11 @@ async function handleAnswer(selectedIndex) {
   // Show feedback banner
   showFeedback(isCorrect);
 
-  // Move to next question after 2 seconds
   setTimeout(() => {
+    if (isLiveQuiz()) {
+      showWaitingFeedback('Waiting for the next question...');
+      return;
+    }
     currentQuestionIndex++;
     if (currentQuestionIndex < QUIZ_DATA.questions.length) {
       loadQuestion(currentQuestionIndex);
@@ -242,6 +256,12 @@ function revealAnswers(correctIndex, selectedIndex) {
     } else {
       btn.classList.add('wrong-answer');
     }
+  });
+}
+
+function disableAnswers() {
+  document.querySelectorAll('.answer-btn').forEach((btn) => {
+    btn.disabled = true;
   });
 }
 
@@ -292,6 +312,11 @@ function startTimer(seconds) {
       // Time's up — treat as wrong answer if not answered
       if (!answered) {
         answered = true;
+        if (isLiveQuiz()) {
+          disableAnswers();
+          showWaitingFeedback('Time is up. Waiting for the next question...');
+          return;
+        }
         revealAnswers(
           QUIZ_DATA.questions[currentQuestionIndex].correctIndex,
           -1,
@@ -322,7 +347,8 @@ function updateTimerDisplay(seconds) {
 
   // Calculate how much of the ring to show
   // When full time: offset = 0. When time = 0: offset = full circumference.
-  const progress = seconds / QUESTION_TIME;
+  const totalSeconds = questionTime();
+  const progress = totalSeconds > 0 ? seconds / totalSeconds : 0;
   const offset = RING_CIRCUMFERENCE * (1 - progress);
   if (ring) {
     ring.style.strokeDashoffset = offset;
@@ -354,6 +380,7 @@ function showResults() {
 
   sessionStorage.setItem('finalScore', score);
   sessionStorage.setItem('totalQuestions', total);
+  sessionStorage.setItem('livePoints', livePoints);
   sessionStorage.setItem(
     'playerName',
     sessionStorage.getItem('playerName') || 'Student',
@@ -364,7 +391,11 @@ function showResults() {
     resultsScreen.style.display = 'flex';
     const resultsScore = document.getElementById('resultsScore');
     if (resultsScore) {
-      safeSetText(resultsScore, `You got ${score} / ${total} correct!`);
+      const points = Number(sessionStorage.getItem('livePoints')) || 0;
+      safeSetText(
+        resultsScore,
+        isLiveQuiz() ? `Your score: ${points.toLocaleString()} points` : `You got ${score} / ${total} correct!`,
+      );
     }
   }
 

@@ -1,4 +1,7 @@
-const role = sessionStorage.getItem('role') || 'professor';
+const role =
+  sessionStorage.getItem('buzzmindRole') ||
+  sessionStorage.getItem('role') ||
+  'professor';
 const playerName = sessionStorage.getItem('playerName') || 'Player';
 
 const studentCard = document.getElementById('studentCard');
@@ -14,13 +17,16 @@ if (role === 'student') {
   if (scoreEl) scoreEl.textContent = `${score} / ${total}`;
 } else if (studentCard) {
   studentCard.style.display = 'none';
+  document.querySelector('.lb-grid')?.classList.add('rankings-only');
 }
 
 if (homeBtn) {
   homeBtn.href =
     role === 'student'
       ? '/Student pages/Home Page/Index.html'
-      : '/Prof page/Classes page/professor2.html';
+      : role === 'admin'
+        ? '/Admin pages/Classes/index.html'
+        : '/Prof page/Classes page/professor2.html';
 }
 
 let finalScores = [];
@@ -34,7 +40,7 @@ try {
 if (rankingsList) {
   if (finalScores.length === 0) {
     rankingsList.innerHTML =
-      '<p style="color:#9ca3af;text-align:center;font-size:0.9rem;">No scores yet.</p>';
+      '<p class="lb-empty">No scores yet.</p>';
   } else {
     finalScores.forEach((entry, i) => {
       const item = document.createElement('div');

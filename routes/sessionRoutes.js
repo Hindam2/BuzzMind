@@ -12,6 +12,10 @@ function formatPin(pin) {
 }
 
 function sessionPayload(session, quiz, options = {}) {
+  const questionIndex = session.currentQuestionIndex;
+  const answeredCount = session.players.filter((p) =>
+    p.answers.some((a) => a.questionIndex === questionIndex),
+  ).length;
   const base = {
     sessionId: session._id,
     pin: session.pin,
@@ -19,6 +23,7 @@ function sessionPayload(session, quiz, options = {}) {
     status: session.status,
     currentQuestionIndex: session.currentQuestionIndex,
     questionOpen: session.questionOpen,
+    answeredCount,
     playerCount: session.players.length,
     quizTitle: quiz?.title,
     totalQuestions: quiz?.questions?.length || 0,
@@ -56,6 +61,16 @@ function emitSessionEvent(req, session, eventName, payload) {
   if (io && session?._id) {
     io.to(`session:${session._id.toString()}`).emit(eventName, payload);
   }
+}
+
+function canControlSession(req, session) {
+  const role = req.session?.role || req.user?.Role;
+  if (role === 'admin') return true;
+  return (
+    role === 'professor' &&
+    req.user?._id &&
+    session?.professor?.toString() === req.user._id.toString()
+  );
 }
 
 router.post('/join', async (req, res, next) => {
@@ -163,11 +178,9 @@ router.get('/:id', requireAuth, async (req, res, next) => {
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
     const quiz = await Quiz.findById(session.quiz);
-    const isProf =
-      req.session.role === 'professor' &&
-      session.professor.toString() === req.user._id.toString();
+    const isController = canControlSession(req, session);
 
-    if (isProf) {
+    if (isController) {
       return res.json({
         ...sessionPayload(session, quiz, {
           includePlayers: true,
@@ -204,9 +217,10 @@ router.get('/:id/quiz', async (req, res, next) => {
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
 
     const playerId = req.query.playerId;
-    const isProf =
+    const isController =
       req.session.userId &&
-      session.professor.toString() === req.session.userId.toString();
+      (session.professor.toString() === req.session.userId.toString() ||
+        req.session.role === 'admin');
     const isPlayer =
       playerId && session.players.some((p) => p._id.toString() === playerId);
     const isLoggedInPlayer =
@@ -215,7 +229,7 @@ router.get('/:id/quiz', async (req, res, next) => {
         (p) => p.userId && p.userId.toString() === req.session.userId,
       );
 
-    if (!isProf && !isPlayer && !isLoggedInPlayer && session.status !== 'waiting') {
+    if (!isController && !isPlayer && !isLoggedInPlayer && session.status !== 'waiting') {
       return res.status(403).json({ error: 'Not allowed to view this quiz' });
     }
 
@@ -228,7 +242,7 @@ router.get('/:id/quiz', async (req, res, next) => {
         imageUrl: q.imageUrl,
         answers: q.answers,
         answerImages: q.answerImages || ['', '', '', ''],
-        correctIndex: isProf ? q.correctIndex : undefined,
+        correctIndex: isController ? q.correctIndex : undefined,
       })),
       sessionStatus: session.status,
       currentQuestionIndex: session.currentQuestionIndex,
@@ -239,13 +253,12 @@ router.get('/:id/quiz', async (req, res, next) => {
   }
 });
 
-router.post('/:id/start', requireAuth, requireRole('professor'), async (req, res, next) => {
+router.post('/:id/start', requireAuth, requireRole('professor', 'admin'), async (req, res, next) => {
   try {
-    const session = await GameSession.findOne({
-      _id: req.params.id,
-      professor: req.user._id,
-    });
-    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const session = await GameSession.findById(req.params.id);
+    if (!session || !canControlSession(req, session)) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
 
     session.status = 'active';
     session.currentQuestionIndex = 0;
@@ -261,24 +274,28 @@ router.post('/:id/start', requireAuth, requireRole('professor'), async (req, res
   }
 });
 
-router.post('/:id/next', requireAuth, requireRole('professor'), async (req, res, next) => {
+router.post('/:id/next', requireAuth, requireRole('professor', 'admin'), async (req, res, next) => {
   try {
-    const session = await GameSession.findOne({
-      _id: req.params.id,
-      professor: req.user._id,
-    });
-    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const session = await GameSession.findById(req.params.id);
+    if (!session || !canControlSession(req, session)) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
 
     const quiz = await Quiz.findById(session.quiz);
     const nextIndex = session.currentQuestionIndex + 1;
 
     if (nextIndex >= quiz.questions.length) {
+      const alreadyFinished = session.status === 'finished';
       session.status = 'finished';
       session.questionOpen = false;
       session.endedAt = new Date();
       await session.save();
-      await saveResults(session, quiz);
-      const payload = { finished: true, ...sessionPayload(session, quiz) };
+      if (!alreadyFinished) await saveResults(session, quiz);
+      const payload = {
+        finished: true,
+        ...sessionPayload(session, quiz),
+        leaderboard: buildLeaderboard(session),
+      };
       emitSessionEvent(req, session, 'session:ended', payload);
       return res.json(payload);
     }
@@ -296,21 +313,21 @@ router.post('/:id/next', requireAuth, requireRole('professor'), async (req, res,
   }
 });
 
-router.post('/:id/end', requireAuth, requireRole('professor'), async (req, res, next) => {
+router.post('/:id/end', requireAuth, requireRole('professor', 'admin'), async (req, res, next) => {
   try {
-    const session = await GameSession.findOne({
-      _id: req.params.id,
-      professor: req.user._id,
-    });
-    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const session = await GameSession.findById(req.params.id);
+    if (!session || !canControlSession(req, session)) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
 
+    const alreadyFinished = session.status === 'finished';
     session.status = 'finished';
     session.questionOpen = false;
     session.endedAt = new Date();
     await session.save();
 
     const quiz = await Quiz.findById(session.quiz);
-    await saveResults(session, quiz);
+    if (!alreadyFinished) await saveResults(session, quiz);
 
     const leaderboard = buildLeaderboard(session);
     emitSessionEvent(req, session, 'session:ended', {
@@ -372,6 +389,7 @@ router.post('/:id/answer', async (req, res, next) => {
       score: player.score,
       answeredCount,
       totalPlayers: session.players.length,
+      leaderboard: buildLeaderboard(session),
     });
 
     res.json({

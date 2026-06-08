@@ -32,6 +32,12 @@
               Invalid email/username or password.
             <% } else if (error === 'missing_fields') { %>
               Please fill in all sign-up fields.
+            <% } else if (error === 'email_code_required') { %>
+              Please verify your email before creating your account.
+            <% } else if (error === 'email_code_invalid') { %>
+              Invalid email verification code.
+            <% } else if (error === 'email_code_expired') { %>
+              Email verification code expired. Please request a new one.
             <% } else { %>
               Something went wrong. Please try again.
             <% } %>
@@ -42,7 +48,7 @@
           <h1>Create Your Account</h1>
           <p class="sub">Join the BuzzMind community today.</p>
 
-          <form action="/register" method="post" onsubmit="return validateSignup();">
+          <form id="signup-account-form" action="/register" method="post">
             <% if (typeof role !== 'undefined' && role) { %>
             <input type="hidden" name="preferredRole" value="<%= role %>" />
             <% } %>
@@ -87,7 +93,28 @@
               <span id="pvir" style="color: red; font-size: 0.75rem"></span>
             </div>
 
-            <button class="cta-btn" type="submit">Create Account</button>
+            <button id="signup-send-code-btn" class="secondary-btn" type="button">
+              Send Email Code
+            </button>
+            <p id="signup-code-timer" class="timer-text" aria-live="polite"></p>
+
+            <div class="field code-field">
+              <label for="signup-code">Email Verification Code</label>
+              <input
+                name="signupCode"
+                id="signup-code"
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                placeholder="Type the code from your email" />
+              <span id="signup-code-error" class="inline-error"></span>
+            </div>
+
+            <p id="signup-status" class="reset-status" aria-live="polite"></p>
+
+            <button id="create-account-btn" class="cta-btn" type="submit">
+              Create Account
+            </button>
           </form>
         </div>
 
@@ -118,6 +145,7 @@
             </div>
 
             <button class="cta-btn" type="submit">Login</button>
+            <a class="secondary-btn" href="/Login Page/forgot-password.html">Forget Password</a>
           </form>
         </div>
       </div>

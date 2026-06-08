@@ -12,3 +12,6 @@ function redirect(target) {
 }
 
 module.exports = { render, redirect };
+
+
+

@@ -78,6 +78,13 @@ app.use(async (req, res, next) => {
   next();
 });
 
+app.get(
+  ['/forgot-password', '/forgot-password.html', '/Login Page/forgot-password.html'],
+  (req, res) => {
+    res.render('Login/forgot-password');
+  },
+);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(pageRoutes);

@@ -24,6 +24,11 @@
     else badge.style.display = 'none';
   }
 
+  function avatarDiv(contact, extraStyle = '') {
+    const hasImage = Boolean(String(contact.avatarUrl || '').trim());
+    return `<div class="avatar" style="${extraStyle}${Dash.avatarStyle(contact.id || contact.name, contact.avatarUrl)}">${hasImage ? '' : E(Dash.initials(contact.name || '?'))}</div>`;
+  }
+
   function renderContacts() {
     if (!contacts.length) {
       listEl.innerHTML = `<div class="empty" style="padding:24px">No one to message yet.</div>`;
@@ -31,7 +36,7 @@
     }
     listEl.innerHTML = contacts.map((c) => `
       <div class="chat-contact ${c.id === activeId ? 'on' : ''}" data-id="${c.id}">
-        <div class="avatar" style="background:${Dash.avatarColor(c.id)}">${E(Dash.initials(c.name))}</div>
+        ${avatarDiv(c)}
         <div style="min-width:0;flex:1">
           <div class="nm">${E(c.name)}</div>
           <div class="last">${c.lastMessage ? E(c.lastMessage) : '<span style="opacity:.6">No messages yet</span>'}</div>
@@ -86,8 +91,7 @@
     if (!contact) return;
     ensureProfileModal();
     const av = document.getElementById('cpAvatar');
-    av.textContent = Dash.initials(contact.name || '?');
-    av.style.background = Dash.avatarColor(contact.id);
+    Dash.applyAvatar(av, contact.name || '?', contact.avatarUrl, contact.id);
     document.getElementById('cpName').textContent = contact.name || 'Unknown';
     const roleEl = document.getElementById('cpRole');
     const role = contact.role || 'user';
@@ -105,7 +109,7 @@
       <div style="display:flex;align-items:center;gap:12px;justify-content:space-between">
         <div id="chatHeadId" role="button" tabindex="0" title="View profile"
              style="display:flex;align-items:center;gap:10px;min-width:0;cursor:pointer">
-          <div class="avatar" style="width:36px;height:36px;background:${Dash.avatarColor(contact.id)}">${E(Dash.initials(contact.name || '?'))}</div>
+          ${avatarDiv(contact, 'width:36px;height:36px;')}
           <div style="min-width:0">
             <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${E(contact.name || 'Conversation')}</div>
             ${role ? `<span class="badge role-${E(role)}">${E(role)}</span>` : ''}
@@ -136,6 +140,7 @@
         contact.name = data.contact.name || contact.name;
         contact.role = data.contact.role || contact.role;
         contact.email = data.contact.email || contact.email;
+        contact.avatarUrl = data.contact.avatarUrl || contact.avatarUrl;
       }
       renderHead(contact || data.contact);
       bodyEl.innerHTML = data.messages.length

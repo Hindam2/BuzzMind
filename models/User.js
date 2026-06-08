@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     Department: { type: String, default: 'GENERAL' },
+    AvatarUrl: { type: String, default: '' },
     CardImageUrl: { type: String, default: '' },
     PasswordResetCode: { type: String, default: null },
     PasswordResetCodeExpiresAt: { type: Date, default: null },

@@ -44,7 +44,7 @@
 
 .class-banner {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) 300px;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
 }
 
@@ -443,7 +443,9 @@
   font-weight: 800;
   height: 42px;
   justify-content: center;
-  letter-spacing: 0.02em;
+  background-position: center;
+  background-size: cover;
+  letter-spacing: 0;
   width: 42px;
 }
 
@@ -487,24 +489,6 @@
 .grade-empty {
   background: var(--bg-2);
   color: var(--muted);
-}
-
-.participation-bars {
-  align-items: flex-end;
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-}
-
-.participation-bars .bar {
-  background: linear-gradient(180deg, var(--brand-2), var(--brand));
-  border: 0;
-  border-radius: 999px;
-  width: 7px;
-}
-
-.participation-bars .bar.empty {
-  background: var(--line);
 }
 
 .action-btns {

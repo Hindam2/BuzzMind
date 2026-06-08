@@ -139,7 +139,7 @@
     const dept = (professor.department || 'GENERAL').toUpperCase();
     return `<div class="card" data-id="${professor.id}">
       <div style="display:flex;gap:12px;align-items:center">
-        <div class="avatar" style="background:${Dash.avatarColor(professor.id)}">${E(Dash.initials(professor.name))}</div>
+        ${Dash.avatarHTML(professor.name, professor.id, professor.avatarUrl)}
         <div style="min-width:0;flex:1">
           <h3 style="margin:0;overflow:hidden;text-overflow:ellipsis">${E(professor.name)}</h3>
           <span class="badge b-purple">${E(dept)}</span>

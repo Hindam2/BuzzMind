@@ -1,6 +1,8 @@
 const express = require('express');
 const Class = require('../models/Class');
 const User = require('../models/User');
+const Assignment = require('../models/Assignment');
+const Submission = require('../models/Submission');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -15,6 +17,61 @@ const GRADIENTS = [
 function cleanImageUrl(value) {
   if (typeof value !== 'string') return undefined;
   return value.trim();
+}
+
+async function withStudentScores(cls) {
+  const payload = cls.toObject ? cls.toObject() : { ...cls };
+  const assignments = await Assignment.find({ classId: cls._id }).select('_id points');
+  const assignmentIds = assignments.map((a) => a._id);
+  const pointsByAssignment = new Map(
+    assignments.map((a) => [String(a._id), Number(a.points) > 0 ? Number(a.points) : 100]),
+  );
+  const totalsByStudent = new Map();
+  const studentIds = (payload.students || [])
+    .map((student) => student.userId)
+    .filter(Boolean);
+
+  const [submissions, users] = await Promise.all([
+    assignmentIds.length
+      ? Submission.find({
+          assignment: { $in: assignmentIds },
+          status: 'graded',
+          grade: { $ne: null },
+        }).select('assignment student grade')
+      : [],
+    studentIds.length
+      ? User.find({ _id: { $in: studentIds } }).select('AvatarUrl')
+      : [],
+  ]);
+
+  const avatarByStudent = new Map(users.map((user) => [String(user._id), user.AvatarUrl || '']));
+
+  submissions.forEach((submission) => {
+    const key = String(submission.student);
+    const points = pointsByAssignment.get(String(submission.assignment)) || 100;
+    const grade = Number(submission.grade);
+    if (!key || !Number.isFinite(grade) || points <= 0) return;
+    const totals = totalsByStudent.get(key) || { earned: 0, max: 0 };
+    totals.earned += grade;
+    totals.max += points;
+    totalsByStudent.set(key, totals);
+  });
+
+  payload.students = (payload.students || []).map((student) => {
+    const userId = student.userId ? String(student.userId) : '';
+    const totals = userId ? totalsByStudent.get(userId) : null;
+    const score =
+      totals && totals.max > 0 ? Math.round((totals.earned / totals.max) * 100) : null;
+    return {
+      ...student,
+      avatarUrl: userId ? avatarByStudent.get(userId) || '' : '',
+      averageScore: score,
+      scorePoints: totals ? Number(totals.earned.toFixed(2)) : 0,
+      scoreMaxPoints: totals ? totals.max : 0,
+    };
+  });
+
+  return payload;
 }
 
 router.use(requireAuth, requireRole('professor'));
@@ -58,7 +115,7 @@ router.get('/:id', async (req, res, next) => {
       professor: req.user._id,
     });
     if (!cls) return res.status(404).json({ error: 'Class not found' });
-    res.json(cls);
+    res.json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }
@@ -140,7 +197,7 @@ router.post('/:id/students', async (req, res, next) => {
       emoji: emoji || '',
     });
     await cls.save();
-    res.status(201).json(cls);
+    res.status(201).json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }
@@ -165,7 +222,7 @@ router.put('/:id/students/:studentId', async (req, res, next) => {
     if (emoji) student.emoji = emoji;
 
     await cls.save();
-    res.json(cls);
+    res.json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }
@@ -183,7 +240,7 @@ router.delete('/:id/students/:studentId', async (req, res, next) => {
     if (!student) return res.status(404).json({ error: 'Student not found' });
     student.deleteOne();
     await cls.save();
-    res.json(cls);
+    res.json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }

@@ -64,54 +64,19 @@ function boundedNumber(value, min, max) {
   return Math.max(min, Math.min(max, Math.round(n)));
 }
 
-function averageGrade(list) {
-  const grades = list
-    .map((s) => boundedNumber(s.grade, 0, 100))
-    .filter((grade) => grade !== null);
-  if (!grades.length) return null;
-  return Math.round(grades.reduce((sum, grade) => sum + grade, 0) / grades.length);
-}
-
-function averageMessage(avg, enrolled) {
-  if (!enrolled) return 'No students enrolled yet.';
-  if (avg === null) return `${enrolled} enrolled; grades have not been recorded yet.`;
-  if (avg >= 85) return `${enrolled} enrolled; average grade is strong.`;
-  if (avg >= 70) return `${enrolled} enrolled; average grade is steady.`;
-  return `${enrolled} enrolled; this class may need attention.`;
-}
-
 function updateClassSummary(cls) {
   const enrolled = students.length;
-  const avg = averageGrade(students);
   const title = document.querySelector('#class-banner-title');
   const copy = document.querySelector('#class-banner-copy');
-  const stat = document.querySelector('#banner-stat-number');
-  const fill = document.querySelector('#banner-progress-fill');
-  const quote = document.querySelector('#banner-quote');
   const enrolledBadge = document.querySelector('.enrolled-badge');
 
   if (title) title.textContent = cls?.name ? `${cls.name} snapshot` : 'Classroom snapshot';
   if (copy) {
     copy.textContent = cls
-      ? `${enrolled} enrolled student${enrolled === 1 ? '' : 's'}${
-          avg === null ? '' : ` with a ${avg}% class average`
-        }.`
+      ? `${enrolled} enrolled student${enrolled === 1 ? '' : 's'}.`
       : 'Open a class from My Classrooms to manage roster data.';
   }
-  if (stat) stat.textContent = avg === null ? '--' : `${avg}%`;
-  if (fill) fill.style.width = `${avg === null ? 0 : avg}%`;
-  if (quote) quote.textContent = averageMessage(avg, enrolled);
   if (enrolledBadge) enrolledBadge.textContent = `${enrolled} Enrolled`;
-}
-
-function participationBars(count) {
-  const active = boundedNumber(count, 0, 4) || 0;
-  let bars = '';
-  for (let i = 1; i <= 4; i++) {
-    const h = 8 + i * 5;
-    bars += `<div class="bar ${i <= active ? '' : 'empty'}" style="height:${h}px"></div>`;
-  }
-  return `<div class="participation-bars">${bars}</div>`;
 }
 
 function mapStudent(s) {
@@ -119,8 +84,10 @@ function mapStudent(s) {
     id: s._id,
     name: s.name,
     email: s.email,
-    grade: boundedNumber(s.grade, 0, 100),
-    participation: boundedNumber(s.participation, 0, 4) || 0,
+    averageScore: boundedNumber(s.averageScore, 0, 100),
+    scorePoints: Number(s.scorePoints) || 0,
+    scoreMaxPoints: Number(s.scoreMaxPoints) || 0,
+    avatarUrl: s.avatarUrl || '',
     emoji: s.emoji || '',
   };
 }
@@ -246,7 +213,7 @@ function renderRoster(list) {
   updateClassSummary(currentClass);
 
   if (!list.length) {
-    tbody.innerHTML = `<tr class="roster-empty-row"><td colspan="4">${
+    tbody.innerHTML = `<tr class="roster-empty-row"><td colspan="3">${
       students.length ? 'No students match your search.' : 'No students enrolled yet.'
     }</td></tr>`;
     return;
@@ -254,20 +221,26 @@ function renderRoster(list) {
 
   list.forEach((s) => {
     const tr = document.createElement('tr');
-    const avatar = s.emoji || initials(s.name);
-    const gradeText = s.grade === null ? '--' : `${s.grade}%`;
+    const fallbackAvatar = s.emoji || initials(s.name);
+    const avatar = window.Dash?.avatarHTML
+      ? Dash.avatarHTML(s.name, s.id || s.email, s.avatarUrl, 'student-avatar')
+      : `<div class="student-avatar">${escapeHTML(fallbackAvatar)}</div>`;
+    const scoreText = s.averageScore === null ? '--' : `${s.averageScore}%`;
+    const scoreTitle =
+      s.scoreMaxPoints > 0
+        ? ` title="${escapeHTML(`${s.scorePoints}/${s.scoreMaxPoints} pts`)}"`
+        : '';
     tr.innerHTML = `
       <td>
         <div class="student-info">
-          <div class="student-avatar">${escapeHTML(avatar)}</div>
+          ${avatar}
           <div>
             <div class="student-name">${escapeHTML(s.name)}</div>
             <div class="student-email">${escapeHTML(s.email)}</div>
           </div>
         </div>
       </td>
-      <td><span class="grade-badge ${gradeClass(s.grade)}">${escapeHTML(gradeText)}</span></td>
-      <td>${participationBars(s.participation)}</td>
+      <td><span class="grade-badge ${gradeClass(s.averageScore)}"${scoreTitle}>${escapeHTML(scoreText)}</span></td>
       <td>
         <div class="action-btns">
           <button class="btn-delete" data-id="${escapeHTML(s.id)}" type="button" title="Delete student" aria-label="Delete ${escapeHTML(s.name)}">

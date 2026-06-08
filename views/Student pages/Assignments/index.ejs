@@ -34,6 +34,12 @@
         <div class="chip" data-f="missed">Missed</div>
       </div>
 
+      <div id="showMoreRow" class="student-show-more-row">
+        <button type="button" class="btn btn-sm student-show-more-btn" id="showMoreBtn">
+          <span class="ic" data-icon="chevron-right"></span>
+          Show more
+        </button>
+      </div>
       <div id="list" class="grid"><div class="empty">Loading assignments…</div></div>
     </div>
   </div>
@@ -71,9 +77,11 @@
 <script>
 (function () {
   const E = Dash.escapeHTML;
+  const INITIAL_VISIBLE = 3;
   let assignments = [];
   let filter = '';
   let pendingFiles = [];
+  let showAll = false;
 
   function statusOf(a) {
     if (a.submission && a.submission.status === 'graded') return 'graded';
@@ -106,8 +114,11 @@
     const s = statusOf(a);
     const canSubmit = s === 'todo' || s === 'submitted' || s === 'missed';
     return `<div class="card" data-id="${a.id}">
-      <div style="display:flex;justify-content:space-between;gap:10px">
-        <h3 style="min-width:0;overflow:hidden;text-overflow:ellipsis">${E(a.title)}</h3>
+      <div class="assign-card-head">
+        <div class="assign-title-wrap">
+          <span class="assign-main-ic">${Dash.icon('file-text')}</span>
+          <h3>${E(a.title)}</h3>
+        </div>
         ${statusBadge(a)}
       </div>
       <div class="meta">${E(a.className || 'Class')} · ${a.points} pts</div>
@@ -130,14 +141,31 @@
     document.getElementById('cMissed').textContent = c.missed;
   }
 
+  function updateShowMore(total, showing) {
+    const row = document.getElementById('showMoreRow');
+    const btn = document.getElementById('showMoreBtn');
+    const remaining = total - showing;
+    if (!row || !btn) return;
+
+    if (remaining > 0) {
+      row.style.display = 'flex';
+      btn.innerHTML = `${Dash.icon('chevron-right')} Show more (${remaining})`;
+    } else {
+      row.style.display = 'none';
+    }
+  }
+
   function render() {
     const el = document.getElementById('list');
     const list = filter ? assignments.filter((a) => statusOf(a) === filter) : assignments;
     if (!list.length) {
+      updateShowMore(0, 0);
       el.innerHTML = `<div class="empty"><div class="big">${Dash.icon('file-text')}</div>Nothing here.</div>`;
       return;
     }
-    el.innerHTML = list.map(cardHtml).join('');
+    const visible = showAll ? list : list.slice(0, INITIAL_VISIBLE);
+    el.innerHTML = visible.map(cardHtml).join('');
+    updateShowMore(list.length, visible.length);
     el.querySelectorAll('.card[data-id]').forEach((card) => {
       const a = assignments.find((x) => x.id === card.dataset.id);
       const btn = card.querySelector('[data-act="submit"]');
@@ -238,6 +266,11 @@
     document.querySelectorAll('#filter .chip').forEach((c) => c.classList.remove('on'));
     chip.classList.add('on');
     filter = chip.dataset.f;
+    showAll = false;
+    render();
+  });
+  document.getElementById('showMoreBtn').addEventListener('click', () => {
+    showAll = true;
     render();
   });
 

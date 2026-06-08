@@ -271,14 +271,12 @@
   }
 
   async function removeAssignment(a) {
-    if (!confirm(`Delete "${a.title}"? All submissions for it will be removed.`)) return;
     try {
       await BuzzMindAPI.deleteAssignment(a.id);
       assignments = assignments.filter((x) => x.id !== a.id);
       render();
-      Dash.toast('Assignment deleted.');
     } catch (err) {
-      Dash.toast(err.message || 'Could not delete', 'error');
+      console.error(err);
     }
   }
 

@@ -196,14 +196,12 @@
   }
 
   async function removeUser(u) {
-    if (!confirm(`Delete ${u.name}? This removes their account and related data.`)) return;
     try {
       await BuzzMindAPI.deleteUser(u.id);
       users = users.filter((x) => x.id !== u.id);
       render();
-      Dash.toast(`${u.name} deleted.`);
     } catch (err) {
-      Dash.toast(err.message || 'Could not delete user', 'error');
+      console.error(err);
     }
   }
 

@@ -45,6 +45,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('session:join', (sessionId) => {
+    const id = String(sessionId || '').trim();
+    if (id) socket.join(`session:${id}`);
+  });
+
+  socket.on('session:leave', (sessionId) => {
+    const id = String(sessionId || '').trim();
+    if (id) socket.leave(`session:${id}`);
+  });
+
   socket.on('disconnect', () => {
     for (const [userId, socketId] of userSockets.entries()) {
       if (socketId === socket.id) {

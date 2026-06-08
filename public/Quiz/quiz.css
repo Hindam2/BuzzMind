@@ -197,8 +197,25 @@ body {
   flex-shrink: 0;
 }
 
+.answer-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
 .answer-text {
   flex: 1;
+}
+
+.answer-image {
+  width: 100%;
+  max-height: 110px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: block;
 }
 
 /* Highlight correct answer after reveal */

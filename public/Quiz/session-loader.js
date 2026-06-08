@@ -32,6 +32,14 @@ window.quizReady = (async function loadSessionQuiz() {
         return window.location.origin + '/' + trimmed.replace(/^\/+/, '');
       })(q.imageUrl),
       answers: q.answers,
+      answerImages: (q.answerImages || ['', '', '', '']).map((url) => {
+        if (!url) return '';
+        const trimmed = String(url).trim();
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        if (trimmed.startsWith('//')) return window.location.protocol + trimmed;
+        if (trimmed.startsWith('/')) return window.location.origin + trimmed;
+        return window.location.origin + '/' + trimmed.replace(/^\/+/, '');
+      }),
       correctIndex: q.correctIndex ?? 0,
     }));
 

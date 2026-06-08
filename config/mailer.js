@@ -1,10 +1,9 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns').promises;
-const { ImapFlow } = require('imapflow');
-
+const { ImapFlow } = require("imapflow");
 const EMAIL_UNREACHABLE_MESSAGE = 'Destination email address is unreachable.';
 const DEFAULT_BOUNCE_CHECK_MS = 2000;
-const BOUNCE_POLL_MS = 1500;
+const BOUNCE_POLL_MS = 500;
 const BOUNCE_SEARCH_FUZZ_MS = 5000;
 const MAX_FETCHED_BOUNCE_MESSAGES = 80;
 

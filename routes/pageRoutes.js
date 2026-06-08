@@ -43,6 +43,17 @@ registerPageRoute(
     next: req.query.next || '',
   })),
 );
+registerPageRoute(
+  '/forgot-password',
+  pageController.render('Login/forgot-password'),
+);
+registerPageRoute(
+  '/forgot-password.html',
+  pageController.render('Login/forgot-password'),
+);
+registerPageRoute('/Login Page/forgot-password.html', (req, res) => {
+  res.redirect('/forgot-password');
+});
 registerPageRoute('/register', (req, res) => {
   const qs = Object.keys(req.query).length
     ? `?${new URLSearchParams(req.query).toString()}`

@@ -13,9 +13,10 @@ let currentQuestionIndex = 0;
 let timerInterval = null;
 let timeLeft = 0;
 let lobbyPollInterval = null;
-// Simulated submission count (in a real app this comes from the server)
+let simulationTimers = [];
 let submittedCount = 0;
-let scores = SESSION_STUDENTS.map(s => ({ name: s.name, score: 0 }));
+let scores = SESSION_STUDENTS.map((s) => ({ id: '', name: s.name, score: 0 }));
+let finalizing = false;
 
 // ---- Real-time socket (optional) ----
 let __bm_socket = null;
@@ -32,18 +33,58 @@ if (typeof io !== 'undefined') {
       } catch (e) {
         console.error('socket auth error', e);
       }
+      joinLiveSessionSocket();
     });
 
     __bm_socket.on('session:playerJoined', (payload) => {
       try {
-        if (!payload || !payload.sessionId) return;
-        if (String(payload.sessionId) === String(window.LIVE_SESSION_ID)) {
-          // refresh the lobby immediately when a player joins
-          refreshProfessorLobby();
-        }
+        if (!isCurrentLiveSession(payload)) return;
+        refreshProfessorLobby();
       } catch (e) {
         console.error('playerJoined handler error', e);
       }
+    });
+
+    __bm_socket.on('session:playersUpdated', (payload) => {
+      if (!isCurrentLiveSession(payload)) return;
+      const players = Array.isArray(payload.players) ? payload.players : [];
+      renderLobbyPlayers(players);
+      syncScores(players);
+      submittedCount = Number(payload.answeredCount) || 0;
+      updateSubmittedDisplay();
+      updateLeaderboard();
+    });
+
+    __bm_socket.on('session:answerSubmitted', (payload) => {
+      if (!isCurrentLiveSession(payload)) return;
+      submittedCount = Number(payload.answeredCount) || submittedCount;
+      if (Array.isArray(payload.leaderboard)) {
+        syncLeaderboard(payload.leaderboard);
+      } else {
+        upsertScore({
+          id: payload.playerId,
+          name: payload.displayName,
+          score: payload.score,
+        });
+      }
+      updateSubmittedDisplay();
+      updateLeaderboard();
+    });
+
+    __bm_socket.on('session:questionChanged', (payload) => {
+      if (!isCurrentLiveSession(payload)) return;
+      if (typeof payload.currentQuestionIndex !== 'number') return;
+      clearInterval(timerInterval);
+      clearSimulationTimers();
+      submittedCount = Number(payload.answeredCount) || 0;
+      currentQuestionIndex = payload.currentQuestionIndex;
+      loadProfQuestion(currentQuestionIndex);
+    });
+
+    __bm_socket.on('session:ended', (payload) => {
+      if (!isCurrentLiveSession(payload)) return;
+      if (Array.isArray(payload.leaderboard)) syncLeaderboard(payload.leaderboard);
+      saveFinalScores();
     });
   } catch (e) {
     console.warn('Socket initialization failed', e);
@@ -61,9 +102,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function startProfessorRound() {
+  joinLiveSessionSocket();
   updateSubmittedDisplay();
   updateLeaderboard();
   loadProfQuestion(currentQuestionIndex);
+}
+
+function isLiveSession() {
+  return !!window.LIVE_SESSION_ID;
+}
+
+function isCurrentLiveSession(payload) {
+  if (!isLiveSession() || !payload?.sessionId) return true;
+  return String(payload.sessionId) === String(window.LIVE_SESSION_ID);
+}
+
+function joinLiveSessionSocket() {
+  if (__bm_socket?.connected && isLiveSession()) {
+    __bm_socket.emit('session:join', window.LIVE_SESSION_ID);
+  }
 }
 
 function formatPin(pin) {
@@ -96,10 +153,39 @@ function renderLobbyPlayers(players = []) {
 
 function syncScores(players = []) {
   if (players.length) {
-    scores = players.map((p) => ({ name: p.displayName || 'Student', score: p.score || 0 }));
+    scores = players.map((p) => ({
+      id: String(p.id || p._id || ''),
+      name: p.displayName || p.name || 'Student',
+      score: Number(p.score) || 0,
+    }));
   } else {
     scores = [];
   }
+}
+
+function syncLeaderboard(leaderboard = []) {
+  scores = leaderboard.map((entry) => ({
+    id: String(entry.id || entry.playerId || ''),
+    name: entry.name || entry.displayName || 'Student',
+    score: Number(entry.score) || 0,
+  }));
+}
+
+function upsertScore(entry) {
+  const id = String(entry.id || '');
+  const idx = scores.findIndex((s) => (id && s.id === id) || s.name === entry.name);
+  const next = {
+    id,
+    name: entry.name || 'Student',
+    score: Number(entry.score) || 0,
+  };
+  if (idx >= 0) scores[idx] = { ...scores[idx], ...next };
+  else scores.push(next);
+}
+
+function clearSimulationTimers() {
+  simulationTimers.forEach((timer) => clearTimeout(timer));
+  simulationTimers = [];
 }
 
 function updateLobbyStatus(text) {
@@ -121,6 +207,7 @@ function closeLaunchLobby() {
 
 async function refreshProfessorLobby() {
   if (!window.LIVE_SESSION_ID || typeof BuzzMindAPI === 'undefined') return;
+  joinLiveSessionSocket();
 
   try {
     const session = await BuzzMindAPI.getSession(window.LIVE_SESSION_ID);
@@ -129,6 +216,7 @@ async function refreshProfessorLobby() {
     safeSetText(document.getElementById('lobbyGamePin'), session.pinFormatted || formatPin(session.pin));
     renderLobbyPlayers(players);
     syncScores(players);
+    submittedCount = Number(session.answeredCount) || 0;
     updateSubmittedDisplay();
     updateLeaderboard();
 
@@ -172,6 +260,7 @@ async function openLaunchLobby() {
       if (typeof started.currentQuestionIndex === 'number') {
         currentQuestionIndex = started.currentQuestionIndex;
       }
+      submittedCount = Number(started.answeredCount) || 0;
       closeLaunchLobby();
       startProfessorRound();
     } catch (err) {
@@ -190,12 +279,14 @@ async function openLaunchLobby() {
  * @param {number} index
  */
 function loadProfQuestion(index) {
+  clearSimulationTimers();
   // Reset submission counter for this question
-  submittedCount = 0;
+  submittedCount = isLiveSession() ? submittedCount : 0;
   updateSubmittedDisplay();
 
   const question = QUIZ_DATA.questions[index];
   const total = QUIZ_DATA.questions.length;
+  if (!question) return;
 
   // Update badge
   const badge = document.getElementById('profQuestionBadge');
@@ -234,8 +325,7 @@ function loadProfQuestion(index) {
   // Start timer
   startProfTimer(QUIZ_DATA.totalTime);
 
-  // Simulate students submitting answers during the timer
-  simulateSubmissions();
+  if (!isLiveSession()) simulateSubmissions();
 }
 
 /**
@@ -291,15 +381,18 @@ function renderProfAnswers(question) {
  */
 async function nextQuestion() {
   clearInterval(timerInterval);
+  clearSimulationTimers();
   if (window.LIVE_SESSION_ID && typeof BuzzMindAPI !== 'undefined') {
     try {
       const session = await BuzzMindAPI.nextQuestion(window.LIVE_SESSION_ID);
       if (session.finished) {
-        endQuiz();
+        if (Array.isArray(session.leaderboard)) syncLeaderboard(session.leaderboard);
+        saveFinalScores();
         return;
       }
       if (typeof session.currentQuestionIndex === 'number') {
         currentQuestionIndex = session.currentQuestionIndex;
+        submittedCount = Number(session.answeredCount) || 0;
         loadProfQuestion(currentQuestionIndex);
         return;
       }
@@ -319,15 +412,22 @@ async function nextQuestion() {
 // REPLACE WITH THIS:
 async function endQuiz() {
   clearInterval(timerInterval);
+  clearSimulationTimers();
   if (window.LIVE_SESSION_ID && typeof BuzzMindAPI !== 'undefined') {
     try {
-      await BuzzMindAPI.endSession(window.LIVE_SESSION_ID);
+      const result = await BuzzMindAPI.endSession(window.LIVE_SESSION_ID);
+      if (Array.isArray(result.leaderboard)) syncLeaderboard(result.leaderboard);
     } catch (err) {
       console.error('Failed to end live session:', err);
     }
   }
 
-  // Save final scores to sessionStorage so leaderboard.html can read them
+  saveFinalScores();
+}
+
+function saveFinalScores() {
+  if (finalizing) return;
+  finalizing = true;
   const sorted = [...scores].sort((a, b) => b.score - a.score);
   sessionStorage.setItem('finalScores', JSON.stringify(sorted));
   sessionStorage.setItem('quizTitle', QUIZ_DATA.title);
@@ -390,13 +490,14 @@ function updateSubmittedDisplay() {
  */
 function simulateSubmissions() {
   const question = QUIZ_DATA.questions[currentQuestionIndex];
+  if (!question) return;
   const correctIndex = question.correctIndex;
 
   scores.forEach((student, i) => {
     // Random delay: each student submits within the question time
-    const delay = Math.random() * (QUIZ_DATA.totalTime - 2) * 1000;
+    const delay = Math.random() * Math.max(1, QUIZ_DATA.totalTime - 2) * 1000;
 
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       // Randomly answer (weighted towards correct to feel realistic)
       const randomAnswer = Math.random() < 0.65 ? correctIndex : Math.floor(Math.random() * 4);
 
@@ -411,6 +512,7 @@ function simulateSubmissions() {
       // Update leaderboard each time someone submits
       updateLeaderboard();
     }, delay);
+    simulationTimers.push(timer);
   });
 }
 

@@ -259,9 +259,12 @@
     wrap.innerHTML = `<div class="chips">${current.quizzes
       .map(
         (q) =>
-          `<span class="chip">${E(q.title)} <span class="muted">· ${q.questionCount} Q</span> <span class="x" data-qid="${q.id}">&times;</span></span>`,
+          `<span class="chip">${E(q.title)} <span class="muted">· ${q.questionCount} Q</span> <button type="button" class="btn btn-sm btn-primary" data-launch-qid="${q.id}" title="Launch live quiz"><span class="ic">${Dash.icon('play')}</span> Launch</button> <span class="x" data-qid="${q.id}">&times;</span></span>`,
       )
       .join('')}</div>`;
+    wrap.querySelectorAll('[data-launch-qid]').forEach((btn) => {
+      btn.addEventListener('click', () => launchQuiz(btn.dataset.launchQid));
+    });
     wrap.querySelectorAll('.x').forEach((x) => {
       x.addEventListener('click', () => detachQuiz(x.dataset.qid));
     });
@@ -344,6 +347,28 @@
       Dash.toast('Quiz detached.');
     } catch (err) {
       Dash.toast(err.message || 'Could not detach quiz', 'error');
+    }
+  }
+
+  function launchButton(qid) {
+    return Array.from(document.querySelectorAll('[data-launch-qid]')).find(
+      (btn) => String(btn.dataset.launchQid) === String(qid),
+    );
+  }
+
+  async function launchQuiz(qid) {
+    if (!current || !qid) return;
+    const btn = launchButton(qid);
+    if (btn) btn.disabled = true;
+    try {
+      const session = await BuzzMindAPI.launchQuiz(qid, { classId: current.id });
+      sessionStorage.setItem('gameSessionId', session.sessionId);
+      sessionStorage.setItem('gamePin', session.pin);
+      Dash.toast(`Live lobby created. PIN ${session.pinFormatted || session.pin}`);
+      window.location.href = `/Quiz/professor-quiz.html?session=${encodeURIComponent(session.sessionId)}`;
+    } catch (err) {
+      Dash.toast(err.message || 'Could not launch quiz', 'error');
+      if (btn) btn.disabled = false;
     }
   }
 

@@ -1,4 +1,7 @@
-const role = sessionStorage.getItem('role') || 'professor';
+const role =
+  sessionStorage.getItem('buzzmindRole') ||
+  sessionStorage.getItem('role') ||
+  'professor';
 const playerName = sessionStorage.getItem('playerName') || 'Player';
 
 const studentCard = document.getElementById('studentCard');
@@ -20,7 +23,9 @@ if (homeBtn) {
   homeBtn.href =
     role === 'student'
       ? '/Student pages/Home Page/Index.html'
-      : '/Prof page/Classes page/professor2.html';
+      : role === 'admin'
+        ? '/Admin pages/Classes/index.html'
+        : '/Prof page/Classes page/professor2.html';
 }
 
 let finalScores = [];

@@ -355,6 +355,74 @@ svg.ic-svg {
   cursor: not-allowed;
 }
 
+/* ---- file pickers ---- */
+.file-picker {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+  position: relative;
+}
+
+.file-picker input[type="file"] {
+  block-size: 1px;
+  clip: rect(0 0 0 0);
+  inline-size: 1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.file-picker-btn {
+  align-items: center;
+  background: var(--panel);
+  border: 1px dashed rgba(109, 94, 252, 0.35);
+  border-radius: 10px;
+  color: var(--brand);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 14px;
+  transition: 0.15s;
+}
+
+.file-picker-btn .ic {
+  width: 16px;
+  height: 16px;
+}
+
+.file-picker input[type="file"]:focus-visible + .file-picker-btn,
+.file-picker-btn:hover {
+  background: var(--brand-soft);
+  border-color: rgba(109, 94, 252, 0.55);
+  transform: translateY(-1px);
+}
+
+.file-picker-text {
+  color: var(--muted);
+  flex: 1;
+  font-size: 13px;
+  min-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-picker.is-filled .file-picker-text {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.file-picker.compact .file-picker-btn {
+  min-height: 38px;
+  padding: 8px 12px;
+}
+
 /* ---- stat cards ---- */
 .stat-grid {
   display: grid;
@@ -572,6 +640,74 @@ svg.ic-svg {
   display: flex;
   gap: 8px;
   margin-top: auto;
+}
+
+.class-card {
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.class-card .card-art {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  height: 150px;
+}
+
+.class-card .card-art-icon {
+  background:
+    radial-gradient(circle at 78% 10%, rgba(47, 127, 230, 0.15), transparent 32%),
+    var(--panel-2);
+}
+
+.class-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 13px;
+  padding: 16px;
+}
+
+.class-card-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.class-card-title {
+  font-size: 17px;
+  line-height: 1.25;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.class-card-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.class-card-progress .row-between {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.class-card-foot {
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.class-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
 }
 
 /* ---- student library / assignments ---- */
@@ -1265,6 +1401,11 @@ svg.ic-svg {
 
   .form-row {
     grid-template-columns: 1fr;
+  }
+
+  .file-picker,
+  .file-picker-btn {
+    width: 100%;
   }
 
   .qb-choices {

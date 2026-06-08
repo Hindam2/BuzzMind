@@ -42,7 +42,14 @@
       </div>
       <div class="field">
         <label>Class photo <span class="hint">(optional)</span></label>
-        <input type="file" id="cImage" accept="image/*" />
+        <div class="file-picker">
+          <input type="file" id="cImage" accept="image/*" />
+          <label class="file-picker-btn" for="cImage">
+            <span class="ic" data-icon="image"></span>
+            Choose photo
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No photo selected">No photo selected</span>
+        </div>
         <div class="hint">Default person icon is used if no photo is selected.</div>
       </div>
       <div class="form-row">
@@ -79,7 +86,14 @@
     <div class="section-title">Class photo</div>
     <div class="form-row">
       <div class="field" style="margin:0">
-        <input type="file" id="mImage" accept="image/*" />
+        <div class="file-picker compact">
+          <input type="file" id="mImage" accept="image/*" />
+          <label class="file-picker-btn" for="mImage">
+            <span class="ic" data-icon="image"></span>
+            Choose photo
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No photo selected">No photo selected</span>
+        </div>
       </div>
       <button type="button" class="btn" id="mUpdateImage"><span class="ic" data-icon="upload"></span> Update photo</button>
     </div>
@@ -223,6 +237,7 @@
       await BuzzMindAPI.createAdminClass(body);
       Dash.closeModal('createModal');
       document.getElementById('createForm').reset();
+      Dash.resetFilePicker('cImage');
       Dash.toast('Class created.');
       await loadAll();
     } catch (err) {
@@ -250,7 +265,7 @@
     }
     document.getElementById('mName').textContent = current.name;
     document.getElementById('mMeta').textContent = `${current.schedule || 'Schedule TBD'} · ${current.level || ''}`;
-    document.getElementById('mImage').value = '';
+    Dash.resetFilePicker('mImage');
     document.getElementById('mProf').innerHTML = profOptions(current.professorId);
     document.getElementById('mQuiz').innerHTML =
       '<option value="">Select a quiz to attach…</option>' +
@@ -342,7 +357,7 @@
       if (!uploadedImageUrl) return;
       const updated = await BuzzMindAPI.updateAdminClass(current.id, { imageUrl: uploadedImageUrl });
       current.imageUrl = updated.imageUrl || uploadedImageUrl;
-      input.value = '';
+      Dash.resetFilePicker(input);
       await refreshCard(current.id);
       Dash.toast('Class photo updated.');
     } catch (err) {
@@ -435,7 +450,12 @@
     } catch (_) {}
   }
 
-  document.getElementById('addBtn').addEventListener('click', () => Dash.openModal('createModal'));
+  document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('createForm').reset();
+    Dash.resetFilePicker('cImage');
+    setCreateAlert('');
+    Dash.openModal('createModal');
+  });
   document.getElementById('createCancel').addEventListener('click', () => Dash.closeModal('createModal'));
   document.getElementById('createForm').addEventListener('submit', submitCreate);
   document.getElementById('manageClose').addEventListener('click', () => Dash.closeModal('manageModal'));

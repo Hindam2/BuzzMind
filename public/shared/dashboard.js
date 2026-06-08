@@ -191,6 +191,41 @@ const Dash = {
     });
   },
 
+  fileSummary(input, emptyText) {
+    const files = Array.from(input?.files || []);
+    if (!files.length) return emptyText || 'No file selected';
+    if (files.length === 1) return files[0].name;
+    return `${files.length} files selected`;
+  },
+
+  syncFilePicker(input) {
+    if (!input) return;
+    const picker = input.closest('.file-picker');
+    if (!picker) return;
+    const label = picker.querySelector('[data-file-label]');
+    const emptyText = label?.dataset.empty || 'No file selected';
+    const hasFiles = Boolean(input.files && input.files.length);
+    picker.classList.toggle('is-filled', hasFiles);
+    if (label) label.textContent = this.fileSummary(input, emptyText);
+  },
+
+  bindFilePickers(root) {
+    (root || document).querySelectorAll('.file-picker input[type="file"]').forEach((input) => {
+      if (input.dataset.filePickerBound) return;
+      input.dataset.filePickerBound = '1';
+      input.addEventListener('change', () => this.syncFilePicker(input));
+      this.syncFilePicker(input);
+    });
+  },
+
+  resetFilePicker(inputOrId) {
+    const input =
+      typeof inputOrId === 'string' ? document.getElementById(inputOrId) : inputOrId;
+    if (!input) return;
+    input.value = '';
+    this.syncFilePicker(input);
+  },
+
   async boot(activeKey) {
     if (typeof BuzzMindAPI === 'undefined') return null;
     try {
@@ -212,5 +247,8 @@ const Dash = {
 
 if (typeof window !== 'undefined') window.Dash = Dash;
 if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => Dash.hydrateIcons());
+  document.addEventListener('DOMContentLoaded', () => {
+    Dash.hydrateIcons();
+    Dash.bindFilePickers();
+  });
 }

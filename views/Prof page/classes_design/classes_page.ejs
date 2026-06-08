@@ -44,11 +44,8 @@
           <section class="class-banner">
             <div class="banner-text">
               <span class="section-kicker">CURRENT CLASS</span>
-              <h2>Class momentum is high</h2>
-              <p>
-                Keep the room moving with a quick roster scan, a fresh live quiz,
-                and a clean view of who is participating.
-              </p>
+              <h2 id="class-banner-title">Classroom snapshot</h2>
+              <p id="class-banner-copy">Loading classroom details...</p>
               <div class="banner-actions">
                 <a class="btn btn-primary" href="/Prof page/QuizBuild/QuizBuild.html">
                   <span class="ic" data-icon="plus"></span>
@@ -63,11 +60,11 @@
 
             <div class="banner-stat">
               <span class="banner-stat-label">CLASS AVERAGE</span>
-              <strong class="banner-stat-number">88%</strong>
+              <strong class="banner-stat-number" id="banner-stat-number">--</strong>
               <div class="banner-progress">
-                <div class="banner-progress-fill"></div>
+                <div class="banner-progress-fill" id="banner-progress-fill"></div>
               </div>
-              <span class="banner-quote">Progressing like a photon.</span>
+              <span class="banner-quote" id="banner-quote">Loading roster data...</span>
             </div>
           </section>
 
@@ -121,7 +118,7 @@
               <div>
                 <span class="section-kicker">ROSTER</span>
                 <h2 class="roster-title">
-                  Student Roster <span class="enrolled-badge">0 Enrolled</span>
+                  Student Roster <span class="enrolled-badge">-- Enrolled</span>
                 </h2>
               </div>
               <button class="btn-add-student" id="add-student-btn" type="button">
@@ -157,7 +154,7 @@
 
               <div class="roster-footer">
                 <span class="roster-count" id="roster-count">
-                  Showing 0 of 0 students
+                  Loading roster...
                 </span>
               </div>
             </div>

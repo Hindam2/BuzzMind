@@ -78,7 +78,7 @@
 }
 
 .banner-text h2 {
-  font-size: clamp(24px, 3vw, 34px);
+  font-size: 30px;
   line-height: 1.05;
   margin: 0 0 10px;
   max-width: 620px;
@@ -128,7 +128,7 @@
 .banner-stat-number {
   font-size: 58px;
   font-weight: 900;
-  letter-spacing: -2px;
+  letter-spacing: 0;
   line-height: 1;
   margin: 10px 0 14px;
 }
@@ -144,7 +144,8 @@
   background: linear-gradient(90deg, var(--green), #75e7b9);
   border-radius: inherit;
   height: 100%;
-  width: 88%;
+  transition: width 0.4s ease;
+  width: 0;
 }
 
 .banner-quote {
@@ -483,6 +484,11 @@
   color: var(--red);
 }
 
+.grade-empty {
+  background: var(--bg-2);
+  color: var(--muted);
+}
+
 .participation-bars {
   align-items: flex-end;
   display: flex;
@@ -511,6 +517,7 @@
   background: rgba(226, 58, 78, 0.08);
   border: 1px solid rgba(226, 58, 78, 0.24);
   color: var(--red);
+  min-width: 38px;
   padding: 8px 12px;
 }
 
@@ -533,6 +540,13 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.roster-empty-row td {
+  color: var(--muted);
+  font-size: 13px;
+  padding: 26px 12px;
+  text-align: center;
 }
 
 .modal-overlay {
@@ -612,6 +626,10 @@
 }
 
 @media (max-width: 760px) {
+  .banner-text h2 {
+    font-size: 24px;
+  }
+
   .manage-top,
   .manage-top .right,
   .roster-panel-head,

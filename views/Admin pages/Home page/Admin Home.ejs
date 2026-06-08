@@ -82,7 +82,14 @@
       </div>
       <div class="field">
         <label>Card photo <span class="hint">(optional)</span></label>
-        <input type="file" id="pmCardImage" accept="image/*" />
+        <div class="file-picker">
+          <input type="file" id="pmCardImage" accept="image/*" />
+          <label class="file-picker-btn" for="pmCardImage">
+            <span class="ic" data-icon="image"></span>
+            Choose photo
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No photo selected">No photo selected</span>
+        </div>
         <div class="hint" id="pmImageHint">Default mail icon is used if no photo is selected.</div>
       </div>
       <div class="modal-actions">
@@ -193,6 +200,7 @@
 
   function openCreate() {
     document.getElementById('profForm').reset();
+    Dash.resetFilePicker('pmCardImage');
     document.getElementById('pmId').value = '';
     document.getElementById('pmCardImageUrl').value = '';
     document.getElementById('pmTitle').textContent = 'Add Professor';
@@ -206,6 +214,7 @@
 
   function openEdit(p) {
     document.getElementById('profForm').reset();
+    Dash.resetFilePicker('pmCardImage');
     document.getElementById('pmId').value = p.id;
     document.getElementById('pmCardImageUrl').value = p.cardImageUrl || '';
     document.getElementById('pmName').value = p.name || '';

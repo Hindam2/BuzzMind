@@ -64,7 +64,14 @@
       </div>
       <div class="field">
         <label>Class photo <span class="hint">(optional)</span></label>
-        <input type="file" id="cmImage" accept="image/*" />
+        <div class="file-picker">
+          <input type="file" id="cmImage" accept="image/*" />
+          <label class="file-picker-btn" for="cmImage">
+            <span class="ic" data-icon="image"></span>
+            Choose photo
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No photo selected">No photo selected</span>
+        </div>
         <div class="hint">Default clock icon is used if no photo is selected.</div>
       </div>
       <div class="modal-actions">
@@ -122,7 +129,7 @@
       if (!uploadedImageUrl) return;
       const updated = await BuzzMindAPI.updateClass(classItem._id, { imageUrl: uploadedImageUrl });
       classItem.imageUrl = updated.imageUrl || uploadedImageUrl;
-      input.value = '';
+      Dash.resetFilePicker(input);
       render();
       Dash.toast('Class photo updated.');
     } catch (err) {
@@ -134,23 +141,31 @@
 
   function cardHtml(c) {
     const count = c.students ? c.students.length : 0;
-    const progress = c.progress || 0;
-    return `<div class="card" data-id="${c._id}" style="overflow:hidden">
+    const progress = Math.max(0, Math.min(100, Number(c.progress) || 0));
+    return `<div class="card class-card" data-id="${c._id}">
       ${classArtHtml(c)}
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <h3 style="margin:0">${E(c.name)}</h3>
-        <div class="schedule-copy"><span>Schedule</span><strong>${E(c.schedule || 'Schedule TBD')}</strong></div>
-        <div class="row-between" style="font-size:12px;color:var(--muted)">
-          <span>COURSE PROGRESS</span><span>${progress}%</span>
+      <div class="class-card-body">
+        <div class="class-card-head">
+          <div style="min-width:0">
+            <h3 class="class-card-title">${E(c.name)}</h3>
+            <div class="meta"><span class="ic">${Dash.icon('calendar')}</span>${E(c.schedule || 'Schedule TBD')}</div>
+          </div>
+          <span class="badge b-purple">${progress}%</span>
         </div>
-        <div class="bar"><div class="bar-fill g" style="width:${progress}%"></div></div>
-        <div class="card-foot" style="margin-top:4px">
+        <div class="class-card-progress">
+          <div class="row-between">
+            <span>Course progress</span>
+            <span>${progress}%</span>
+          </div>
+          <div class="bar"><div class="bar-fill g" style="width:${progress}%"></div></div>
+        </div>
+        <div class="card-foot class-card-foot">
           <span class="badge b-green">${count} student${count === 1 ? '' : 's'}</span>
-          <div style="display:flex;gap:6px;margin-left:auto">
+          <div class="class-card-actions">
             <button class="btn btn-sm" data-act="image" type="button"><span class="ic">${Dash.icon('upload')}</span> Photo</button>
             <input type="file" data-act="image-input" accept="image/*" hidden />
-            <button class="btn btn-sm btn-danger" data-act="del" type="button"><span class="ic">${Dash.icon('trash')}</span></button>
-            <button class="btn btn-sm btn-primary" data-act="manage" type="button">Manage</button>
+            <button class="btn btn-sm btn-danger btn-icon" data-act="del" type="button" title="Delete class" aria-label="Delete ${E(c.name)}"><span class="ic">${Dash.icon('trash')}</span></button>
+            <button class="btn btn-sm btn-primary" data-act="manage" type="button"><span class="ic">${Dash.icon('settings')}</span> Manage</button>
           </div>
         </div>
       </div>
@@ -195,6 +210,7 @@
 
   function openCreate() {
     document.getElementById('classForm').reset();
+    Dash.resetFilePicker('cmImage');
     setAlert('');
     Dash.openModal('classModal');
     document.getElementById('cmName').focus();

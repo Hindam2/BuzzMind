@@ -2,6 +2,7 @@ let students = [];
 let editingId = null;
 let classId = null;
 let drafts = [];
+let currentClass = null;
 
 function getClassIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -49,16 +50,66 @@ function initials(name) {
 }
 
 function gradeClass(g) {
-  if (g >= 85) return 'grade-high';
-  if (g >= 70) return 'grade-mid';
+  const grade = Number(g);
+  if (!Number.isFinite(grade)) return 'grade-empty';
+  if (grade >= 85) return 'grade-high';
+  if (grade >= 70) return 'grade-mid';
   return 'grade-low';
 }
 
+function boundedNumber(value, min, max) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function averageGrade(list) {
+  const grades = list
+    .map((s) => boundedNumber(s.grade, 0, 100))
+    .filter((grade) => grade !== null);
+  if (!grades.length) return null;
+  return Math.round(grades.reduce((sum, grade) => sum + grade, 0) / grades.length);
+}
+
+function averageMessage(avg, enrolled) {
+  if (!enrolled) return 'No students enrolled yet.';
+  if (avg === null) return `${enrolled} enrolled; grades have not been recorded yet.`;
+  if (avg >= 85) return `${enrolled} enrolled; average grade is strong.`;
+  if (avg >= 70) return `${enrolled} enrolled; average grade is steady.`;
+  return `${enrolled} enrolled; this class may need attention.`;
+}
+
+function updateClassSummary(cls) {
+  const enrolled = students.length;
+  const avg = averageGrade(students);
+  const title = document.querySelector('#class-banner-title');
+  const copy = document.querySelector('#class-banner-copy');
+  const stat = document.querySelector('#banner-stat-number');
+  const fill = document.querySelector('#banner-progress-fill');
+  const quote = document.querySelector('#banner-quote');
+  const enrolledBadge = document.querySelector('.enrolled-badge');
+
+  if (title) title.textContent = cls?.name ? `${cls.name} snapshot` : 'Classroom snapshot';
+  if (copy) {
+    copy.textContent = cls
+      ? `${enrolled} enrolled student${enrolled === 1 ? '' : 's'}${
+          avg === null ? '' : ` with a ${avg}% class average`
+        }.`
+      : 'Open a class from My Classrooms to manage roster data.';
+  }
+  if (stat) stat.textContent = avg === null ? '--' : `${avg}%`;
+  if (fill) fill.style.width = `${avg === null ? 0 : avg}%`;
+  if (quote) quote.textContent = averageMessage(avg, enrolled);
+  if (enrolledBadge) enrolledBadge.textContent = `${enrolled} Enrolled`;
+}
+
 function participationBars(count) {
+  const active = boundedNumber(count, 0, 4) || 0;
   let bars = '';
   for (let i = 1; i <= 4; i++) {
     const h = 8 + i * 5;
-    bars += `<div class="bar ${i <= count ? '' : 'empty'}" style="height:${h}px"></div>`;
+    bars += `<div class="bar ${i <= active ? '' : 'empty'}" style="height:${h}px"></div>`;
   }
   return `<div class="participation-bars">${bars}</div>`;
 }
@@ -68,8 +119,8 @@ function mapStudent(s) {
     id: s._id,
     name: s.name,
     email: s.email,
-    grade: s.grade,
-    participation: s.participation,
+    grade: boundedNumber(s.grade, 0, 100),
+    participation: boundedNumber(s.participation, 0, 4) || 0,
     emoji: s.emoji || '',
   };
 }
@@ -190,9 +241,21 @@ function renderRoster(list) {
   const tbody = document.querySelector('#roster-body');
   tbody.innerHTML = '';
 
+  document.querySelector('#roster-count').textContent =
+    `Showing ${list.length} of ${students.length} students`;
+  updateClassSummary(currentClass);
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="roster-empty-row"><td colspan="4">${
+      students.length ? 'No students match your search.' : 'No students enrolled yet.'
+    }</td></tr>`;
+    return;
+  }
+
   list.forEach((s) => {
     const tr = document.createElement('tr');
     const avatar = s.emoji || initials(s.name);
+    const gradeText = s.grade === null ? '--' : `${s.grade}%`;
     tr.innerHTML = `
       <td>
         <div class="student-info">
@@ -203,18 +266,17 @@ function renderRoster(list) {
           </div>
         </div>
       </td>
-      <td><span class="grade-badge ${gradeClass(s.grade)}">${escapeHTML(s.grade)}%</span></td>
+      <td><span class="grade-badge ${gradeClass(s.grade)}">${escapeHTML(gradeText)}</span></td>
       <td>${participationBars(s.participation)}</td>
       <td>
         <div class="action-btns">
-          <button class="btn-delete" data-id="${escapeHTML(s.id)}" type="button">Delete</button>
+          <button class="btn-delete" data-id="${escapeHTML(s.id)}" type="button" title="Delete student" aria-label="Delete ${escapeHTML(s.name)}">
+            <span class="ic">${window.Dash ? Dash.icon('trash') : ''}</span>
+          </button>
         </div>
       </td>`;
     tbody.appendChild(tr);
   });
-
-  document.querySelector('#roster-count').textContent =
-    `Showing ${list.length} of ${students.length} students`;
 
   document.querySelectorAll('.btn-delete').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -223,12 +285,13 @@ function renderRoster(list) {
         try {
           const cls = await BuzzMindAPI.deleteStudent(classId, id);
           students = cls.students.map(mapStudent);
+          currentClass = cls;
         } catch (err) {
           console.error(err);
           return;
         }
       } else {
-        students = students.filter((s) => s.id !== id);
+        return;
       }
       renderRoster(students);
     });
@@ -238,38 +301,25 @@ function renderRoster(list) {
 async function loadClassRoster() {
   classId = getClassIdFromUrl();
   if (!classId || typeof BuzzMindAPI === 'undefined') {
-    students = [
-      {
-        id: '1',
-        name: 'Alex "Neutron" Rivera',
-        email: 'alex.rivera@buzzmind.com',
-        grade: 94,
-        participation: 4,
-        emoji: '',
-      },
-      {
-        id: '2',
-        name: 'Luna Stark',
-        email: 'luna.stark@buzzmind.com',
-        grade: 89,
-        participation: 3,
-        emoji: '',
-      },
-    ];
+    currentClass = null;
+    students = [];
+    const title = document.querySelector('.page-title, h1, .class-title, .current-class-name');
+    if (title) title.textContent = 'Classroom Management';
     renderRoster(students);
     return;
   }
 
   try {
     const cls = await BuzzMindAPI.getClass(classId);
+    currentClass = cls;
     students = cls.students.map(mapStudent);
     const title = document.querySelector('.page-title, h1, .class-title, .current-class-name');
     if (title) title.textContent = cls.name;
-    const enrolled = document.querySelector('.enrolled-badge');
-    if (enrolled) enrolled.textContent = `${students.length} Enrolled`;
     renderRoster(students);
   } catch (err) {
     console.error(err);
+    currentClass = null;
+    students = [];
     renderRoster([]);
   }
 }
@@ -312,23 +362,18 @@ document.querySelector('#confirm-add').onclick = async () => {
     return;
   }
 
-  if (classId && typeof BuzzMindAPI !== 'undefined') {
-    try {
-      const cls = await BuzzMindAPI.addStudent(classId, { name, email });
-      students = cls.students.map(mapStudent);
-    } catch (err) {
-      showError('#add-email-error', err.message);
-      return;
-    }
-  } else {
-    students.push({
-      id: String(Date.now()),
-      name,
-      email,
-      grade: 80,
-      participation: 3,
-      emoji: '',
-    });
+  if (!classId || typeof BuzzMindAPI === 'undefined') {
+    showError('#add-email-error', 'Open a saved class before adding students.');
+    return;
+  }
+
+  try {
+    const cls = await BuzzMindAPI.addStudent(classId, { name, email });
+    currentClass = cls;
+    students = cls.students.map(mapStudent);
+  } catch (err) {
+    showError('#add-email-error', err.message);
+    return;
   }
 
   addModal.style.display = 'none';

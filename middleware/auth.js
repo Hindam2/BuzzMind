@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { roleHome, safeNextUrl } = require('../utils/rolePaths');
-
+// this file for the authentication and authorization middleware functions, including session hydration and role-based access control.
 async function hydrateSession(req) {
   if (!req.session?.userId) return false;
 

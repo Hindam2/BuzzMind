@@ -93,28 +93,39 @@ const Dash = {
   },
 
   avatarHTML(name, seed, avatarUrl, cls = 'avatar') {
-    const hasImage = Boolean(String(avatarUrl || '').trim());
-    return `<div class="${cls}" style="${this.avatarStyle(seed || name, avatarUrl)}">${hasImage ? '' : this.escapeHTML(this.initials(name))}</div>`;
+    const initials = this.escapeHTML(this.initials(name));
+    const color = this.avatarColor(seed || name);
+    const url = String(avatarUrl || '').trim();
+    // Render initials underneath; overlay the photo so a missing/broken image
+    // (onerror removes it) gracefully falls back to the initials.
+    const img = url
+      ? `<img src="${this.escapeHTML(url)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.remove()">`
+      : '';
+    return `<div class="${cls}" style="position:relative;overflow:hidden;background:${color}">${initials}${img}</div>`;
   },
 
   applyAvatar(el, name, avatarUrl, seed) {
     if (!el) return;
-    const url = this.cssUrl(avatarUrl);
+    // Always paint initials + color first, so a missing/broken image still shows something.
     el.style.backgroundImage = '';
     el.style.backgroundSize = '';
     el.style.backgroundPosition = '';
-    if (url) {
-      el.textContent = '';
-      el.style.background = 'var(--panel-2)';
-      el.style.backgroundImage = `url("${url}")`;
-      el.style.backgroundSize = 'cover';
-      el.style.backgroundPosition = 'center';
-      el.setAttribute('aria-label', `${name || 'User'} avatar`);
-      return;
-    }
-    el.removeAttribute('aria-label');
+    el.style.position = 'relative';
+    el.style.overflow = 'hidden';
     el.style.background = this.avatarColor(seed || name);
     el.textContent = this.initials(name);
+    el.removeAttribute('aria-label');
+    const url = String(avatarUrl || '').trim();
+    if (url) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = `${name || 'User'} avatar`;
+      img.style.cssText =
+        'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit';
+      img.onerror = () => img.remove(); // fall back to the initials underneath
+      el.appendChild(img);
+      el.setAttribute('aria-label', `${name || 'User'} avatar`);
+    }
   },
 
   fmtDate(d) {

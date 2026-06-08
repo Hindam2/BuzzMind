@@ -25,8 +25,15 @@
   }
 
   function avatarDiv(contact, extraStyle = '') {
-    const hasImage = Boolean(String(contact.avatarUrl || '').trim());
-    return `<div class="avatar" style="${extraStyle}${Dash.avatarStyle(contact.id || contact.name, contact.avatarUrl)}">${hasImage ? '' : E(Dash.initials(contact.name || '?'))}</div>`;
+    const initials = E(Dash.initials(contact.name || '?'));
+    const color = Dash.avatarColor(contact.id || contact.name);
+    const url = String(contact.avatarUrl || '').trim();
+    // Photo overlays the initials; if it fails to load it removes itself and the
+    // initials show through instead of an empty box.
+    const img = url
+      ? `<img src="${E(url)}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.remove()">`
+      : '';
+    return `<div class="avatar" style="${extraStyle}position:relative;overflow:hidden;background:${color}">${initials}${img}</div>`;
   }
 
   function renderContacts() {

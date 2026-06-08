@@ -55,35 +55,47 @@
   }
 
   // Returns an avatar element as an HTML string (inline-styled, no CSS needed).
+  // Initials render underneath; the photo overlays them and removes itself on
+  // error, so a missing/broken image falls back to initials instead of a blank.
   function html(name, seed, url, size = 40) {
-    const u = cssUrl(url);
     const dim = `width:${size}px;height:${size}px;border-radius:50%;flex-shrink:0;`;
-    if (u) {
-      return `<div class="bz-avatar" style="${dim}background:#eef1f8 center/cover no-repeat;background-image:url('${u}')"></div>`;
-    }
-    return `<div class="bz-avatar" style="${dim}background:${color(
+    const base = `${dim}position:relative;overflow:hidden;background:${color(
       seed || name,
     )};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:${Math.round(
       size * 0.4,
-    )}px">${escapeHTML(initials(name))}</div>`;
+    )}px`;
+    const u = String(url || '').trim();
+    const img = u
+      ? `<img src="${escapeHTML(resolveUrl(u))}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" onerror="this.remove()">`
+      : '';
+    return `<div class="bz-avatar" style="${base}">${escapeHTML(initials(name))}${img}</div>`;
   }
 
   // Paints an existing element as an avatar (used for the navbar circle).
   function apply(el, name, url, seed, size) {
     if (!el) return;
-    const u = cssUrl(url);
     if (size) {
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
     }
-    el.style.backgroundImage = '';
-    if (u) {
-      el.textContent = '';
-      el.style.background = `#eef1f8 url('${u}') center/cover no-repeat`;
-      return;
-    }
+    el.style.position = 'relative';
+    el.style.overflow = 'hidden';
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    el.style.color = '#fff';
+    el.style.fontWeight = '700';
     el.style.background = color(seed || name);
     el.textContent = initials(name);
+    const u = String(url || '').trim();
+    if (u) {
+      const img = document.createElement('img');
+      img.src = resolveUrl(u);
+      img.alt = '';
+      img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover';
+      img.onerror = () => img.remove();
+      el.appendChild(img);
+    }
   }
 
   window.BuzzAvatar = { initials, color, html, apply, resolveUrl };

@@ -12,6 +12,11 @@ const GRADIENTS = [
   'linear-gradient(135deg,#0f2027,#203a43)',
 ];
 
+function cleanImageUrl(value) {
+  if (typeof value !== 'string') return undefined;
+  return value.trim();
+}
+
 router.use(requireAuth, requireRole('professor'));
 
 router.get('/', async (req, res, next) => {
@@ -27,7 +32,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress } = req.body;
+    const { name, schedule, level, progress, imageUrl } = req.body;
     if (!name?.trim()) {
       return res.status(400).json({ error: 'Class name is required' });
     }
@@ -37,6 +42,7 @@ router.post('/', async (req, res, next) => {
       level: level || 'LEVEL 100',
       progress: progress ?? 0,
       coverGradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+      imageUrl: cleanImageUrl(imageUrl) || '',
       professor: req.user._id,
     });
     res.status(201).json(cls);
@@ -60,7 +66,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress } = req.body;
+    const { name, schedule, level, progress, imageUrl } = req.body;
     const cls = await Class.findOneAndUpdate(
       { _id: req.params.id, professor: req.user._id },
       {
@@ -68,6 +74,7 @@ router.put('/:id', async (req, res, next) => {
         ...(schedule !== undefined && { schedule }),
         ...(level !== undefined && { level }),
         ...(progress !== undefined && { progress }),
+        ...(imageUrl !== undefined && { imageUrl: cleanImageUrl(imageUrl) || '' }),
       },
       { new: true },
     );

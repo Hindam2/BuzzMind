@@ -19,6 +19,7 @@ const classSchema = new mongoose.Schema(
       type: String,
       default: 'linear-gradient(135deg,#0f2027,#203a43)',
     },
+    imageUrl: { type: String, default: '' },
     professor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

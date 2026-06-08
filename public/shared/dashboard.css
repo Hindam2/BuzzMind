@@ -518,6 +518,56 @@ svg.ic-svg {
   display: inline-flex;
 }
 
+.card .meta > svg.ic-svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.card-art {
+  height: 132px;
+  border: 1px dashed var(--line);
+  border-radius: 14px;
+  background: var(--panel-2);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.card-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-art-icon svg.ic-svg {
+  width: 76px;
+  height: 76px;
+  stroke-width: 1.7;
+}
+
+.schedule-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.schedule-copy strong {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.view-all-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
 .card-foot {
   display: flex;
   gap: 8px;

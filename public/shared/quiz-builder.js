@@ -261,17 +261,14 @@
     return { title, totalTime, questions: cleaned };
   }
 
-  async function save(status = 'draft') {
+  async function save() {
     const payload = collect();
     if (!payload) return;
     const saveDraftBtn = document.getElementById('saveDraftBtn') || document.getElementById('saveBtn');
-    const publishBtn = document.getElementById('publishBtn');
-    const activeBtn = status === 'published' ? publishBtn : saveDraftBtn;
     if (saveDraftBtn) saveDraftBtn.disabled = true;
-    if (publishBtn) publishBtn.disabled = true;
     try {
-      await BuzzMindAPI.createQuiz({ ...payload, status });
-      Dash.toast(status === 'published' ? 'Quiz published to your library.' : 'Draft saved.');
+      await BuzzMindAPI.createQuiz({ ...payload, status: 'draft' });
+      Dash.toast('Draft saved.');
       questions = [blank()];
       document.getElementById('quizTitle').value = '';
       render();
@@ -279,15 +276,12 @@
       Dash.toast(err.message || 'Could not save quiz', 'error');
     } finally {
       if (saveDraftBtn) saveDraftBtn.disabled = false;
-      if (publishBtn) publishBtn.disabled = false;
-      if (activeBtn) activeBtn.blur();
+      if (saveDraftBtn) saveDraftBtn.blur();
     }
   }
 
   const saveDraftBtn = document.getElementById('saveDraftBtn') || document.getElementById('saveBtn');
-  const publishBtn = document.getElementById('publishBtn');
-  if (saveDraftBtn) saveDraftBtn.addEventListener('click', () => save('draft'));
-  if (publishBtn) publishBtn.addEventListener('click', () => save('published'));
+  if (saveDraftBtn) saveDraftBtn.addEventListener('click', save);
 
   questions = [blank()];
   render();

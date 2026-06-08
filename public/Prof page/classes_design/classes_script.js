@@ -85,8 +85,7 @@ function mapStudent(s) {
     name: s.name,
     email: s.email,
     averageScore: boundedNumber(s.averageScore, 0, 100),
-    scorePoints: Number(s.scorePoints) || 0,
-    scoreMaxPoints: Number(s.scoreMaxPoints) || 0,
+    accuracyAttempts: Number(s.accuracyAttempts) || 0,
     avatarUrl: s.avatarUrl || '',
     emoji: s.emoji || '',
   };
@@ -148,7 +147,7 @@ async function loadDrafts() {
     renderDrafts();
     setDraftMessage(
       drafts.length
-        ? 'Choose a draft, then attach it to this class.'
+        ? 'Choose any draft quiz, then attach it to this class.'
         : 'No drafts yet. Save a draft from Quiz Builder first.',
     );
   } catch (err) {
@@ -173,6 +172,8 @@ function showLaunchResult(session) {
 async function launchSelectedDraft() {
   const select = document.querySelector('#draft-select');
   const quizId = select?.value;
+  const timeInput = document.querySelector('#draft-time');
+  const totalTime = Number(timeInput?.value);
   classId = classId || getClassIdFromUrl();
 
   if (!classId) {
@@ -183,11 +184,18 @@ async function launchSelectedDraft() {
     setDraftMessage('Choose a draft quiz first.', 'error');
     return;
   }
+  if (!Number.isFinite(totalTime) || totalTime < 5 || totalTime > 120) {
+    setDraftMessage('Quiz time must be between 5 and 120 minutes.', 'error');
+    return;
+  }
 
   setDraftControlsDisabled(true);
   setDraftMessage('Attaching draft and creating live session...');
   try {
-    const session = await BuzzMindAPI.launchQuiz(quizId, { classId });
+    const session = await BuzzMindAPI.launchQuiz(quizId, {
+      classId,
+      totalTime: Math.round(totalTime),
+    });
     sessionStorage.setItem('gameSessionId', session.sessionId);
     sessionStorage.setItem('gamePin', session.pin);
     showLaunchResult(session);
@@ -226,10 +234,9 @@ function renderRoster(list) {
       ? Dash.avatarHTML(s.name, s.id || s.email, s.avatarUrl, 'student-avatar')
       : `<div class="student-avatar">${escapeHTML(fallbackAvatar)}</div>`;
     const scoreText = s.averageScore === null ? '--' : `${s.averageScore}%`;
-    const scoreTitle =
-      s.scoreMaxPoints > 0
-        ? ` title="${escapeHTML(`${s.scorePoints}/${s.scoreMaxPoints} pts`)}"`
-        : '';
+    const scoreTitle = s.accuracyAttempts
+      ? ` title="${escapeHTML(`${s.accuracyAttempts} quiz attempt${s.accuracyAttempts === 1 ? '' : 's'}`)}"`
+      : '';
     tr.innerHTML = `
       <td>
         <div class="student-info">

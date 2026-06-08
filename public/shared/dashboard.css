@@ -1369,6 +1369,9 @@ svg.ic-svg {
 .qb-choice .pick .ic { width: 15px; height: 15px; }
 .qb-choice.correct { border-color: var(--green); background: rgba(21,160,106,0.08); }
 .qb-choice.correct .pick { background: var(--green); border-color: var(--green); }
+.qb-answer-main { display: flex; flex: 1; align-items: center; gap: 8px; min-width: 0; }
+.qb-answer-img-wrap { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.qb-answer-img-prev { width: 60px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); display: none; background: #fff; }
 .qb-addq { width: 100%; justify-content: center; border-style: dashed; padding: 16px; }
 .qb-import { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
 .qb-import-info { display: flex; align-items: center; gap: 12px; min-width: 220px; }

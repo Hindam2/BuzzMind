@@ -1,8 +1,9 @@
 const express = require('express');
 const Class = require('../models/Class');
 const User = require('../models/User');
-const Assignment = require('../models/Assignment');
-const Submission = require('../models/Submission');
+const Quiz = require('../models/Quiz');
+const GameSession = require('../models/GameSession');
+const QuizResult = require('../models/QuizResult');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -21,23 +22,33 @@ function cleanImageUrl(value) {
 
 async function withStudentScores(cls) {
   const payload = cls.toObject ? cls.toObject() : { ...cls };
-  const assignments = await Assignment.find({ classId: cls._id }).select('_id points');
-  const assignmentIds = assignments.map((a) => a._id);
-  const pointsByAssignment = new Map(
-    assignments.map((a) => [String(a._id), Number(a.points) > 0 ? Number(a.points) : 100]),
-  );
-  const totalsByStudent = new Map();
   const studentIds = (payload.students || [])
     .map((student) => student.userId)
     .filter(Boolean);
+  const quizzes = await Quiz.find({ classId: cls._id }).select('_id');
+  const quizIds = quizzes.map((quiz) => quiz._id);
+  const sessions = quizIds.length
+    ? await GameSession.find({ quiz: { $in: quizIds } }).select('_id')
+    : [];
+  const sessionIds = sessions.map((session) => session._id);
 
-  const [submissions, users] = await Promise.all([
-    assignmentIds.length
-      ? Submission.find({
-          assignment: { $in: assignmentIds },
-          status: 'graded',
-          grade: { $ne: null },
-        }).select('assignment student grade')
+  const [accuracyAgg, users] = await Promise.all([
+    sessionIds.length && studentIds.length
+      ? QuizResult.aggregate([
+          {
+            $match: {
+              sessionId: { $in: sessionIds },
+              userId: { $in: studentIds },
+            },
+          },
+          {
+            $group: {
+              _id: '$userId',
+              avgAccuracy: { $avg: '$accuracy' },
+              attempts: { $sum: 1 },
+            },
+          },
+        ])
       : [],
     studentIds.length
       ? User.find({ _id: { $in: studentIds } }).select('AvatarUrl')
@@ -45,29 +56,24 @@ async function withStudentScores(cls) {
   ]);
 
   const avatarByStudent = new Map(users.map((user) => [String(user._id), user.AvatarUrl || '']));
-
-  submissions.forEach((submission) => {
-    const key = String(submission.student);
-    const points = pointsByAssignment.get(String(submission.assignment)) || 100;
-    const grade = Number(submission.grade);
-    if (!key || !Number.isFinite(grade) || points <= 0) return;
-    const totals = totalsByStudent.get(key) || { earned: 0, max: 0 };
-    totals.earned += grade;
-    totals.max += points;
-    totalsByStudent.set(key, totals);
-  });
+  const accuracyByStudent = new Map(
+    accuracyAgg.map((row) => [
+      String(row._id),
+      {
+        averageScore: Number.isFinite(row.avgAccuracy) ? Math.round(row.avgAccuracy) : null,
+        attempts: Number(row.attempts) || 0,
+      },
+    ]),
+  );
 
   payload.students = (payload.students || []).map((student) => {
     const userId = student.userId ? String(student.userId) : '';
-    const totals = userId ? totalsByStudent.get(userId) : null;
-    const score =
-      totals && totals.max > 0 ? Math.round((totals.earned / totals.max) * 100) : null;
+    const accuracy = userId ? accuracyByStudent.get(userId) : null;
     return {
       ...student,
       avatarUrl: userId ? avatarByStudent.get(userId) || '' : '',
-      averageScore: score,
-      scorePoints: totals ? Number(totals.earned.toFixed(2)) : 0,
-      scoreMaxPoints: totals ? totals.max : 0,
+      averageScore: accuracy ? accuracy.averageScore : null,
+      accuracyAttempts: accuracy ? accuracy.attempts : 0,
     };
   });
 

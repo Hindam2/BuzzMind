@@ -34,9 +34,7 @@ function emitClassLaunch(req, cls, payload) {
 }
 
 function quizLaunchFilter(req, quizId) {
-  const filter = { _id: quizId };
-  if (req.user.Role !== 'admin') filter.professor = req.user._id;
-  return filter;
+  return { _id: quizId };
 }
 
 function classLaunchFilter(req, classId) {
@@ -126,14 +124,20 @@ router.get('/library', async (req, res, next) => {
 
 router.get('/', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
-    const filter = { professor: req.user._id };
     const { status, classId } = req.query;
+    const filter = {};
 
     if (status) {
       if (!['draft', 'published'].includes(status)) {
         return res.status(400).json({ error: 'Invalid quiz status filter' });
       }
       filter.status = status;
+    }
+    if (
+      req.user.Role !== 'admin' &&
+      !(req.user.Role === 'professor' && status === 'draft')
+    ) {
+      filter.professor = req.user._id;
     }
 
     if (classId) {
@@ -149,7 +153,7 @@ router.get('/', requireRole('professor', 'admin'), async (req, res, next) => {
 
 router.post('/', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
-    const { title, questions, totalTime, classId, status } = req.body;
+    const { title, questions, totalTime, classId } = req.body;
     if (!title?.trim()) {
       return res.status(400).json({ error: 'Quiz title is required' });
     }
@@ -179,7 +183,7 @@ router.post('/', requireRole('professor', 'admin'), async (req, res, next) => {
         answerImages: (q.answerImages || ['', '', '', '']).slice(0, 4).map((a) => String(a || '')),
         correctIndex: q.correctIndex,
       })),
-      status: status || 'published',
+      status: 'draft',
     });
     res.status(201).json(quiz);
   } catch (err) {
@@ -239,7 +243,7 @@ router.delete('/:id', requireRole('professor', 'admin'), async (req, res, next) 
 
 router.post('/:id/launch', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
-    const { classId } = req.body || {};
+    const { classId, totalTime } = req.body || {};
     const quiz = await Quiz.findOne(quizLaunchFilter(req, req.params.id));
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
 
@@ -250,8 +254,12 @@ router.post('/:id/launch', requireRole('professor', 'admin'), async (req, res, n
       quiz.classId = cls._id;
     }
 
-    if (quiz.status === 'draft') {
-      quiz.status = 'published';
+    if (totalTime !== undefined) {
+      const parsedTime = Number(totalTime);
+      if (!Number.isFinite(parsedTime) || parsedTime < 5 || parsedTime > 120) {
+        return res.status(400).json({ error: 'Quiz time must be between 5 and 120 minutes' });
+      }
+      quiz.totalTime = Math.round(parsedTime);
     }
     await quiz.save();
 

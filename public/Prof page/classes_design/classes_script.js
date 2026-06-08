@@ -86,7 +86,7 @@ function renderRoster(list) {
           const cls = await BuzzMindAPI.deleteStudent(classId, id);
           students = cls.students.map(mapStudent);
         } catch (err) {
-          alert(err.message);
+          console.error(err);
           return;
         }
       } else {

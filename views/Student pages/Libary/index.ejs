@@ -40,6 +40,12 @@
         </div>
       </div>
 
+      <div id="showMoreRow" class="student-show-more-row library-show-more-row">
+        <button type="button" class="btn btn-sm student-show-more-btn" id="showMoreBtn">
+          <span class="ic" data-icon="chevron-right"></span>
+          Show more
+        </button>
+      </div>
       <div class="grid" id="quizGrid"><div class="empty">Loading your quizzes…</div></div>
     </div>
   </div>
@@ -51,8 +57,10 @@
 <script>
 (function () {
   const E = Dash.escapeHTML;
+  const INITIAL_VISIBLE = 3;
   let quizzes = [];
   let query = '';
+  let showAll = false;
 
   function accColor(a) {
     if (a >= 80) return 'b-green';
@@ -92,18 +100,35 @@
     </div>`;
   }
 
+  function updateShowMore(total, showing) {
+    const row = document.getElementById('showMoreRow');
+    const btn = document.getElementById('showMoreBtn');
+    const remaining = total - showing;
+    if (!row || !btn) return;
+
+    if (remaining > 0) {
+      row.style.display = 'flex';
+      btn.innerHTML = `${Dash.icon('chevron-right')} Show more (${remaining})`;
+    } else {
+      row.style.display = 'none';
+    }
+  }
+
   function render() {
     const grid = document.getElementById('quizGrid');
     const list = query
       ? quizzes.filter((q) => (q.quizTitle || '').toLowerCase().includes(query))
       : quizzes;
     if (!list.length) {
+      updateShowMore(0, 0);
       grid.innerHTML = `<div class="empty"><div class="big">${Dash.icon('inbox')}</div>${
         quizzes.length ? 'No quizzes match your search.' : "You haven't played any quizzes yet. Join a live game from Discover."
       }</div>`;
       return;
     }
-    grid.innerHTML = list.map(cardHtml).join('');
+    const visible = showAll ? list : list.slice(0, INITIAL_VISIBLE);
+    grid.innerHTML = visible.map(cardHtml).join('');
+    updateShowMore(list.length, visible.length);
   }
 
   async function load() {
@@ -120,6 +145,12 @@
 
   document.getElementById('quizSearch').addEventListener('input', function () {
     query = this.value.trim().toLowerCase();
+    showAll = false;
+    render();
+  });
+
+  document.getElementById('showMoreBtn').addEventListener('click', function () {
+    showAll = true;
     render();
   });
 

@@ -13,6 +13,7 @@ let score = 0; // how many correct answers
 let timerInterval = null; // reference to the countdown interval
 let timeLeft = 0; // seconds remaining for current question
 let answered = false; // has the student answered yet?
+let studentSocket = null;
 
 // Total time per question (from quiz-data.js)
 const QUESTION_TIME = QUIZ_DATA.totalTime;
@@ -39,12 +40,54 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (typeof session.currentQuestionIndex === 'number') {
         currentQuestionIndex = session.currentQuestionIndex;
       }
-    } catch (err) {
+  } catch (err) {
       console.error('Failed to verify session state:', err);
     }
   }
+  initLiveSocket();
   loadQuestion(currentQuestionIndex);
 });
+
+function isCurrentLiveSession(payload) {
+  if (!window.LIVE_SESSION_ID || !payload?.sessionId) return true;
+  return String(payload.sessionId) === String(window.LIVE_SESSION_ID);
+}
+
+function initLiveSocket() {
+  if (!window.LIVE_SESSION_ID || typeof io === 'undefined') return;
+  try {
+    studentSocket = io({ transports: ['websocket'], withCredentials: true });
+
+    studentSocket.on('connect', async () => {
+      try {
+        if (typeof BuzzMindAPI !== 'undefined') {
+          const me = await BuzzMindAPI.getMe().catch(() => null);
+          const userId = me && (me.id || me._id || me.userId);
+          if (userId) studentSocket.emit('user:join', userId);
+        }
+      } catch (err) {
+        console.error('socket user join failed', err);
+      }
+      studentSocket.emit('session:join', window.LIVE_SESSION_ID);
+    });
+
+    studentSocket.on('session:questionChanged', (payload) => {
+      if (!isCurrentLiveSession(payload)) return;
+      if (typeof payload.currentQuestionIndex !== 'number') return;
+      clearInterval(timerInterval);
+      currentQuestionIndex = payload.currentQuestionIndex;
+      loadQuestion(currentQuestionIndex);
+    });
+
+    studentSocket.on('session:ended', (payload) => {
+      if (!isCurrentLiveSession(payload)) return;
+      clearInterval(timerInterval);
+      showResults();
+    });
+  } catch (err) {
+    console.warn('Student quiz socket unavailable', err);
+  }
+}
 
 /**
  * Load and display a question by index.
@@ -217,6 +260,17 @@ function showFeedback(isCorrect) {
     text,
     isCorrect ? 'Correct! Great job!' : 'Not quite — keep going!',
   );
+  banner.style.display = 'flex';
+}
+
+function showWaitingFeedback(message) {
+  const banner = document.getElementById('feedbackBanner');
+  const icon = document.getElementById('feedbackIcon');
+  const text = document.getElementById('feedbackText');
+
+  banner.className = 'feedback-banner';
+  safeSetText(icon, '');
+  safeSetText(text, message);
   banner.style.display = 'flex';
 }
 

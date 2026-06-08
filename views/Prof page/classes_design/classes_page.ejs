@@ -84,6 +84,42 @@
         </div>
       </div>
 
+      <!-- Draft Quiz Launcher -->
+      <section class="quiz-launch-card" aria-labelledby="draft-launch-title">
+        <div class="quiz-launch-copy">
+          <div class="section-kicker">LIVE QUIZ</div>
+          <h2 id="draft-launch-title">Attach a draft and launch</h2>
+          <p>
+            Pick one of your saved draft quizzes, attach it to this class, and
+            open a live lobby for students.
+          </p>
+        </div>
+
+        <div class="draft-launch-controls">
+          <label for="draft-select">Draft quiz</label>
+          <div class="draft-select-row">
+            <select id="draft-select" class="draft-select">
+              <option value="">Loading drafts...</option>
+            </select>
+            <button class="btn-refresh-drafts" id="refresh-drafts-btn" type="button">
+              Refresh
+            </button>
+          </div>
+          <button class="btn-launch-draft" id="launch-draft-btn" type="button">
+            Attach and Launch
+          </button>
+          <p class="draft-launch-msg" id="draft-launch-msg"></p>
+        </div>
+
+        <div class="launch-result" id="live-session-card" hidden>
+          <div>
+            <span class="launch-result-label">GAME PIN</span>
+            <strong id="launched-pin">---</strong>
+          </div>
+          <a class="btn-open-lobby" id="open-prof-lobby" href="#">Open lobby</a>
+        </div>
+      </section>
+
       <!-- Toolbar (UPDATED) -->
       <div class="roster-toolbar">
         <input

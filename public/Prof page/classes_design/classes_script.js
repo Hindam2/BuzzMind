@@ -1,6 +1,7 @@
 let students = [];
 let editingId = null;
 let classId = null;
+let drafts = [];
 
 function getClassIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -47,6 +48,118 @@ function mapStudent(s) {
     participation: s.participation,
     emoji: s.emoji || '',
   };
+}
+
+function setDraftMessage(message, type = '') {
+  const msg = document.querySelector('#draft-launch-msg');
+  if (!msg) return;
+  msg.textContent = message || '';
+  msg.className = `draft-launch-msg${type ? ` ${type}` : ''}`;
+}
+
+function setDraftControlsDisabled(disabled) {
+  const launchBtn = document.querySelector('#launch-draft-btn');
+  const refreshBtn = document.querySelector('#refresh-drafts-btn');
+  if (launchBtn) launchBtn.disabled = disabled || drafts.length === 0;
+  if (refreshBtn) refreshBtn.disabled = disabled;
+}
+
+function draftMeta(quiz) {
+  const count = Array.isArray(quiz.questions) ? quiz.questions.length : 0;
+  const label = count === 1 ? 'question' : 'questions';
+  return `${quiz.title || 'Untitled draft'} - ${count} ${label}`;
+}
+
+function renderDrafts() {
+  const select = document.querySelector('#draft-select');
+  if (!select) return;
+
+  select.innerHTML = '';
+  if (!drafts.length) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'No draft quizzes found';
+    select.appendChild(option);
+    setDraftControlsDisabled(false);
+    document.querySelector('#launch-draft-btn').disabled = true;
+    return;
+  }
+
+  drafts.forEach((quiz) => {
+    const option = document.createElement('option');
+    option.value = quiz._id;
+    option.textContent = draftMeta(quiz);
+    select.appendChild(option);
+  });
+  setDraftControlsDisabled(false);
+}
+
+async function loadDrafts() {
+  const select = document.querySelector('#draft-select');
+  if (!select || typeof BuzzMindAPI === 'undefined') return;
+
+  setDraftMessage('Loading your draft quizzes...');
+  setDraftControlsDisabled(true);
+  try {
+    const list = await BuzzMindAPI.getQuizzes({ status: 'draft' });
+    drafts = Array.isArray(list) ? list : [];
+    renderDrafts();
+    setDraftMessage(
+      drafts.length
+        ? 'Choose a draft, then attach it to this class.'
+        : 'No drafts yet. Save a draft from Quiz Builder first.',
+    );
+  } catch (err) {
+    drafts = [];
+    renderDrafts();
+    setDraftMessage(err.message || 'Could not load draft quizzes.', 'error');
+  }
+}
+
+function showLaunchResult(session) {
+  const card = document.querySelector('#live-session-card');
+  const pin = document.querySelector('#launched-pin');
+  const lobby = document.querySelector('#open-prof-lobby');
+  if (!card || !pin || !lobby) return;
+
+  const lobbyUrl = `/Quiz/professor-quiz.html?session=${encodeURIComponent(session.sessionId)}`;
+  pin.textContent = session.pinFormatted || session.pin || '---';
+  lobby.href = lobbyUrl;
+  card.hidden = false;
+}
+
+async function launchSelectedDraft() {
+  const select = document.querySelector('#draft-select');
+  const quizId = select?.value;
+  classId = classId || getClassIdFromUrl();
+
+  if (!classId) {
+    setDraftMessage('Open this page from a class before launching a quiz.', 'error');
+    return;
+  }
+  if (!quizId) {
+    setDraftMessage('Choose a draft quiz first.', 'error');
+    return;
+  }
+
+  setDraftControlsDisabled(true);
+  setDraftMessage('Attaching draft and creating live session...');
+  try {
+    const session = await BuzzMindAPI.launchQuiz(quizId, { classId });
+    sessionStorage.setItem('gameSessionId', session.sessionId);
+    sessionStorage.setItem('gamePin', session.pin);
+    showLaunchResult(session);
+    drafts = drafts.filter((quiz) => String(quiz._id) !== String(quizId));
+    renderDrafts();
+    setDraftMessage('Live lobby created. Taking you there now...', 'success');
+    setTimeout(() => {
+      window.location.href = `/Quiz/professor-quiz.html?session=${encodeURIComponent(session.sessionId)}`;
+    }, 900);
+  } catch (err) {
+    setDraftMessage(err.message || 'Could not launch this draft.', 'error');
+  } finally {
+    setDraftControlsDisabled(false);
+  }
 }
 
 function renderRoster(list) {
@@ -125,8 +238,10 @@ async function loadClassRoster() {
   try {
     const cls = await BuzzMindAPI.getClass(classId);
     students = cls.students.map(mapStudent);
-    const title = document.querySelector('.page-title, h1, .class-title');
+    const title = document.querySelector('.page-title, h1, .class-title, .current-class-name');
     if (title) title.textContent = cls.name;
+    const enrolled = document.querySelector('.enrolled-badge');
+    if (enrolled) enrolled.textContent = `${students.length} Enrolled`;
     renderRoster(students);
   } catch (err) {
     console.error(err);
@@ -143,6 +258,9 @@ document.querySelector('#search-input')?.addEventListener('input', (e) => {
     ),
   );
 });
+
+document.querySelector('#refresh-drafts-btn')?.addEventListener('click', loadDrafts);
+document.querySelector('#launch-draft-btn')?.addEventListener('click', launchSelectedDraft);
 
 const addModal = document.querySelector('#add-modal');
 
@@ -200,4 +318,7 @@ document.querySelectorAll('.modal-overlay').forEach((m) => {
   };
 });
 
-document.addEventListener('DOMContentLoaded', loadClassRoster);
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadClassRoster();
+  await loadDrafts();
+});

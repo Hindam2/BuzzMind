@@ -76,8 +76,23 @@ const BuzzMindAPI = {
     });
   },
 
-  launchQuiz(quizId) {
-    return this.request(`/api/quizzes/${quizId}/launch`, { method: 'POST' });
+  getQuizzes(params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    return this.request(`/api/quizzes${qs ? `?${qs}` : ''}`);
+  },
+
+  updateQuiz(quizId, body) {
+    return this.request(`/api/quizzes/${quizId}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  launchQuiz(quizId, body = {}) {
+    return this.request(`/api/quizzes/${quizId}/launch`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   },
 
   importTrivia({ amount = 5, difficulty = '' } = {}) {

@@ -1,6 +1,7 @@
 const express = require('express');
 const Quiz = require('../models/Quiz');
 const GameSession = require('../models/GameSession');
+const Class = require('../models/Class');
 const { generatePin } = require('../utils/pin');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
@@ -13,6 +14,23 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+function formatPin(pin) {
+  const digits = String(pin || '');
+  return digits.length === 6 ? `${digits.slice(0, 3)} ${digits.slice(3)}` : digits;
+}
+
+function emitClassLaunch(req, cls, payload) {
+  const io = req.app.get('io');
+  const userSockets = req.app.get('userSockets');
+  if (!io || !userSockets || !cls?.students?.length) return;
+
+  cls.students.forEach((student) => {
+    if (!student.userId) return;
+    const socketId = userSockets.get(String(student.userId));
+    if (socketId) io.to(socketId).emit('class:quizLaunched', payload);
+  });
 }
 
 router.use(requireAuth);
@@ -96,9 +114,21 @@ router.get('/library', async (req, res, next) => {
 
 router.get('/', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
-    const quizzes = await Quiz.find({ professor: req.user._id }).sort({
-      createdAt: -1,
-    });
+    const filter = { professor: req.user._id };
+    const { status, classId } = req.query;
+
+    if (status) {
+      if (!['draft', 'published'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid quiz status filter' });
+      }
+      filter.status = status;
+    }
+
+    if (classId) {
+      filter.classId = classId === 'none' ? null : classId;
+    }
+
+    const quizzes = await Quiz.find(filter).sort({ updatedAt: -1, createdAt: -1 });
     res.json(quizzes);
   } catch (err) {
     next(err);
@@ -197,11 +227,27 @@ router.delete('/:id', requireRole('professor', 'admin'), async (req, res, next) 
 
 router.post('/:id/launch', requireRole('professor', 'admin'), async (req, res, next) => {
   try {
+    const { classId } = req.body || {};
     const quiz = await Quiz.findOne({
       _id: req.params.id,
       professor: req.user._id,
     });
     if (!quiz) return res.status(404).json({ error: 'Quiz not found' });
+
+    let cls = null;
+    if (classId) {
+      cls = await Class.findOne({
+        _id: classId,
+        professor: req.user._id,
+      });
+      if (!cls) return res.status(404).json({ error: 'Class not found' });
+      quiz.classId = cls._id;
+    }
+
+    if (quiz.status === 'draft') {
+      quiz.status = 'published';
+    }
+    await quiz.save();
 
     let pin;
     let exists = true;
@@ -222,11 +268,17 @@ router.post('/:id/launch', requireRole('professor', 'admin'), async (req, res, n
       status: 'waiting',
     });
 
-    res.status(201).json({
-      sessionId: session._id,
+    const payload = {
+      classId: quiz.classId,
+      sessionId: session._id.toString(),
       pin: session.pin,
+      pinFormatted: formatPin(session.pin),
       quizTitle: quiz.title,
-    });
+    };
+
+    if (cls) emitClassLaunch(req, cls, payload);
+
+    res.status(201).json(payload);
   } catch (err) {
     next(err);
   }

@@ -51,6 +51,13 @@ function sessionPayload(session, quiz, options = {}) {
   return base;
 }
 
+function emitSessionEvent(req, session, eventName, payload) {
+  const io = req.app.get('io');
+  if (io && session?._id) {
+    io.to(`session:${session._id.toString()}`).emit(eventName, payload);
+  }
+}
+
 router.post('/join', async (req, res, next) => {
   try {
     const pin = String(req.body.pin || '').replace(/\D/g, '');
@@ -83,6 +90,8 @@ router.post('/join', async (req, res, next) => {
           !p.userId ||
           p.userId.toString() === req.session.userId),
     );
+    let playerForResponse = already;
+    let joinedPlayer = null;
     if (!already) {
       // Only attach a userId to the player when the requester is an actual student account
       const playerUserId = req.session.userId && userRole === 'student' ? req.session.userId : null;
@@ -92,20 +101,21 @@ router.post('/join', async (req, res, next) => {
         score: 0,
       });
       await session.save();
+      joinedPlayer = session.players[session.players.length - 1];
+      playerForResponse = joinedPlayer;
       // Notify professor in real-time (if connected via socket.io)
       try {
         const io = req.app.get('io');
         const userSockets = req.app.get('userSockets');
         if (io && userSockets) {
           const profSocketId = userSockets.get(String(session.professor));
-          const newPlayer = session.players[session.players.length - 1];
-          if (profSocketId && newPlayer) {
+          if (profSocketId && joinedPlayer) {
             io.to(profSocketId).emit('session:playerJoined', {
               sessionId: session._id.toString(),
               player: {
-                id: newPlayer._id.toString(),
-                displayName: newPlayer.displayName,
-                score: newPlayer.score || 0,
+                id: joinedPlayer._id.toString(),
+                displayName: joinedPlayer.displayName,
+                score: joinedPlayer.score || 0,
               },
             });
           }
@@ -115,9 +125,19 @@ router.post('/join', async (req, res, next) => {
       }
     }
     const quiz = await Quiz.findById(session.quiz);
+    if (joinedPlayer) {
+      emitSessionEvent(req, session, 'session:playersUpdated', {
+        ...sessionPayload(session, quiz, { includePlayers: true }),
+        player: {
+          id: joinedPlayer._id.toString(),
+          displayName: joinedPlayer.displayName,
+          score: joinedPlayer.score || 0,
+        },
+      });
+    }
     res.json({
       ...sessionPayload(session, quiz, { includePlayers: true }),
-      playerId: already?._id || session.players[session.players.length - 1]._id,
+      playerId: playerForResponse?._id,
     });
   } catch (err) {
     next(err);
@@ -233,6 +253,8 @@ router.post('/:id/start', requireAuth, requireRole('professor'), async (req, res
     await session.save();
 
     const quiz = await Quiz.findById(session.quiz);
+    const studentPayload = sessionPayload(session, quiz, { includeQuestion: true });
+    emitSessionEvent(req, session, 'session:started', studentPayload);
     res.json(sessionPayload(session, quiz, { includeQuestion: true, includeCorrect: true }));
   } catch (err) {
     next(err);
@@ -256,13 +278,18 @@ router.post('/:id/next', requireAuth, requireRole('professor'), async (req, res,
       session.endedAt = new Date();
       await session.save();
       await saveResults(session, quiz);
-      return res.json({ finished: true, ...sessionPayload(session, quiz) });
+      const payload = { finished: true, ...sessionPayload(session, quiz) };
+      emitSessionEvent(req, session, 'session:ended', payload);
+      return res.json(payload);
     }
 
     session.currentQuestionIndex = nextIndex;
     session.questionOpen = true;
     await session.save();
 
+    emitSessionEvent(req, session, 'session:questionChanged', sessionPayload(session, quiz, {
+      includeQuestion: true,
+    }));
     res.json(sessionPayload(session, quiz, { includeQuestion: true, includeCorrect: true }));
   } catch (err) {
     next(err);
@@ -286,6 +313,11 @@ router.post('/:id/end', requireAuth, requireRole('professor'), async (req, res, 
     await saveResults(session, quiz);
 
     const leaderboard = buildLeaderboard(session);
+    emitSessionEvent(req, session, 'session:ended', {
+      finished: true,
+      ...sessionPayload(session, quiz),
+      leaderboard,
+    });
     res.json({ finished: true, leaderboard });
   } catch (err) {
     next(err);
@@ -328,6 +360,19 @@ router.post('/:id/answer', async (req, res, next) => {
       correct,
     });
     await session.save();
+
+    const answeredCount = session.players.filter((p) =>
+      p.answers.some((a) => a.questionIndex === qIndex),
+    ).length;
+    emitSessionEvent(req, session, 'session:answerSubmitted', {
+      sessionId: session._id.toString(),
+      questionIndex: qIndex,
+      playerId: player._id.toString(),
+      displayName: player.displayName,
+      score: player.score,
+      answeredCount,
+      totalPlayers: session.players.length,
+    });
 
     res.json({
       correct,

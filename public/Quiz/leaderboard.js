@@ -12,7 +12,7 @@ function renderRankings(entries) {
 
   if (!entries.length) {
     rankingsList.innerHTML =
-      '<p style="color:#9ca3af;text-align:center;font-size:0.9rem;">No scores yet.</p>';
+      '<p class="lb-empty">No scores yet.</p>';
     return;
   }
 

@@ -24,6 +24,30 @@ function clearErrors(...ids) {
   ids.forEach((id) => (document.querySelector(id).textContent = ''));
 }
 
+function escapeHTML(value) {
+  if (window.Dash?.escapeHTML) return window.Dash.escapeHTML(value);
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function initials(name) {
+  if (window.Dash?.initials) return window.Dash.initials(name);
+  return (
+    String(name || '?')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase() || '?'
+  );
+}
+
 function gradeClass(g) {
   if (g >= 85) return 'grade-high';
   if (g >= 70) return 'grade-mid';
@@ -168,28 +192,29 @@ function renderRoster(list) {
 
   list.forEach((s) => {
     const tr = document.createElement('tr');
+    const avatar = s.emoji || initials(s.name);
     tr.innerHTML = `
       <td>
         <div class="student-info">
-          <div class="student-avatar">${s.emoji}</div>
+          <div class="student-avatar">${escapeHTML(avatar)}</div>
           <div>
-            <div class="student-name">${s.name}</div>
-            <div class="student-email">${s.email}</div>
+            <div class="student-name">${escapeHTML(s.name)}</div>
+            <div class="student-email">${escapeHTML(s.email)}</div>
           </div>
         </div>
       </td>
-      <td><span class="grade-badge ${gradeClass(s.grade)}">${s.grade}%</span></td>
+      <td><span class="grade-badge ${gradeClass(s.grade)}">${escapeHTML(s.grade)}%</span></td>
       <td>${participationBars(s.participation)}</td>
       <td>
         <div class="action-btns">
-          <button class="btn-delete" data-id="${s.id}">Delete</button>
+          <button class="btn-delete" data-id="${escapeHTML(s.id)}" type="button">Delete</button>
         </div>
       </td>`;
     tbody.appendChild(tr);
   });
 
   document.querySelector('#roster-count').textContent =
-    `SHOWING ${list.length} OF ${students.length} STUDENTS`;
+    `Showing ${list.length} of ${students.length} students`;
 
   document.querySelectorAll('.btn-delete').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -319,6 +344,7 @@ document.querySelectorAll('.modal-overlay').forEach((m) => {
 });
 
 document.addEventListener('DOMContentLoaded', async () => {
+  if (window.Dash?.boot) await window.Dash.boot('classes');
   await loadClassRoster();
   await loadDrafts();
 });

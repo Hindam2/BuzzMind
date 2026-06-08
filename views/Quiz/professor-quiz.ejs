@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BuzzMind – Professor View</title>
+    <title>BuzzMind - Professor View</title>
     <link rel="stylesheet" href="/Quiz/style.css" />
     <link rel="stylesheet" href="/Quiz/quiz.css" />
     <link rel="stylesheet" href="/Quiz/professor-quiz.css" />
@@ -40,16 +40,30 @@
           </div>
           <div class="start-area">
             <button class="start-btn" id="lobbyStartBtn" type="button">
-              START ▶
+              Start Quiz
             </button>
           </div>
         </div>
       </div>
     </div>
+
+    <header class="prof-quiz-hero">
+      <div>
+        <a class="quiz-back-link" href="/Prof page/Classes page/professor2.html">
+          Back to classes
+        </a>
+        <p class="quiz-eyebrow">Live quiz control</p>
+        <h1>Question Control Room</h1>
+        <p class="quiz-hero-copy">
+          Watch submissions, pace the room, and keep the leaderboard visible while
+          students answer in real time.
+        </p>
+      </div>
+      <div class="quiz-hero-chip">Professor View</div>
+    </header>
+
     <main class="prof-main">
-      <!-- Left: question display + answer breakdown -->
       <section class="prof-question-panel">
-        <!-- Question badge + text -->
         <div class="prof-question-header">
           <span class="question-badge" id="profQuestionBadge"
             >QUESTION 1 OF 10</span
@@ -59,7 +73,6 @@
           </h2>
         </div>
 
-        <!-- Optional image -->
         <div id="profImageWrapper" style="display: none">
           <img
             id="profQuestionImage"
@@ -68,15 +81,10 @@
             class="question-img" />
         </div>
 
-        <!-- Answer options (display only, no clicking for professor) -->
-        <div class="prof-answers-grid" id="profAnswersGrid">
-          <!-- Filled by JS -->
-        </div>
+        <div class="prof-answers-grid" id="profAnswersGrid"></div>
       </section>
 
-      <!-- Right: live stats panel -->
       <aside class="prof-stats-panel">
-        <!-- Submitted count -->
         <div class="stat-card">
           <p class="stat-label">ANSWERS SUBMITTED</p>
           <p class="stat-value" id="submittedCount">0 / 0</p>
@@ -88,20 +96,17 @@
           </div>
         </div>
 
-        <!-- Timer display -->
         <div class="stat-card">
           <p class="stat-label">TIME REMAINING</p>
           <p class="stat-value timer-big" id="profTimer">20s</p>
         </div>
 
-        <!-- Controls -->
         <div class="prof-controls">
           <button
             class="btn-next"
             id="nextBtn"
-            onclick="nextQuestion()"
-            style="color: brown">
-            Next Question ▶
+            onclick="nextQuestion()">
+            Next Question
           </button>
           <button
             class="btn-end"
@@ -112,12 +117,12 @@
           </button>
         </div>
 
-        <!-- Leaderboard -->
         <div class="leaderboard-card">
-          <h3 class="leaderboard-title">Leaderboard</h3>
-          <ol class="leaderboard-list" id="leaderboardList">
-            <!-- Filled by JS -->
-          </ol>
+          <div class="leaderboard-heading">
+            <h3 class="leaderboard-title">Live Leaderboard</h3>
+            <p>Top 5 students by score</p>
+          </div>
+          <ol class="leaderboard-list" id="leaderboardList"></ol>
         </div>
       </aside>
     </main>

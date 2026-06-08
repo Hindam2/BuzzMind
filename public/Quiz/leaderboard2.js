@@ -17,6 +17,7 @@ if (role === 'student') {
   if (scoreEl) scoreEl.textContent = `${score} / ${total}`;
 } else if (studentCard) {
   studentCard.style.display = 'none';
+  document.querySelector('.lb-grid')?.classList.add('rankings-only');
 }
 
 if (homeBtn) {
@@ -39,7 +40,7 @@ try {
 if (rankingsList) {
   if (finalScores.length === 0) {
     rankingsList.innerHTML =
-      '<p style="color:#9ca3af;text-align:center;font-size:0.9rem;">No scores yet.</p>';
+      '<p class="lb-empty">No scores yet.</p>';
   } else {
     finalScores.forEach((entry, i) => {
       const item = document.createElement('div');

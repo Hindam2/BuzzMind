@@ -47,9 +47,16 @@ function userPayload(u, extra = {}) {
     username: u.Username,
     role: u.Role,
     department: u.Department || 'GENERAL',
+    avatarUrl: u.AvatarUrl || '',
+    cardImageUrl: u.CardImageUrl || '',
     createdAt: u.createdAt,
     ...extra,
   };
+}
+
+function cleanImageUrl(value) {
+  if (typeof value !== 'string') return undefined;
+  return value.trim();
 }
 
 async function uniqueUsername(base) {
@@ -98,6 +105,8 @@ router.get('/professors', async (req, res, next) => {
           email: prof.Email,
           username: prof.Username,
           department: prof.Department || 'GENERAL',
+          avatarUrl: prof.AvatarUrl || '',
+          cardImageUrl: prof.CardImageUrl || '',
           classCount: classes.length,
           studentCount,
         };
@@ -111,7 +120,7 @@ router.get('/professors', async (req, res, next) => {
 
 router.post('/professors', async (req, res, next) => {
   try {
-    const { name, email, username, password, department } = req.body;
+    const { name, email, username, password, department, cardImageUrl } = req.body;
     if (!name?.trim() || !email?.trim()) {
       return res.status(400).json({ error: 'Name and email are required' });
     }
@@ -134,6 +143,7 @@ router.post('/professors', async (req, res, next) => {
       Password: await hashPassword(plainPassword),
       Role: 'professor',
       Department: (department || 'GENERAL').toUpperCase(),
+      CardImageUrl: cleanImageUrl(cardImageUrl) || '',
     });
 
     res.status(201).json({
@@ -148,7 +158,7 @@ router.post('/professors', async (req, res, next) => {
 router.put('/professors/:id', async (req, res, next) => {
   try {
     if (!isId(req.params.id)) return res.status(400).json({ error: 'Invalid id' });
-    const { name, email, username, department, password } = req.body;
+    const { name, email, username, department, password, cardImageUrl } = req.body;
     const prof = await User.findOne({ _id: req.params.id, Role: 'professor' });
     if (!prof) return res.status(404).json({ error: 'Professor not found' });
 
@@ -169,6 +179,7 @@ router.put('/professors/:id', async (req, res, next) => {
     }
     if (name?.trim()) prof.Name = name.trim();
     if (department !== undefined) prof.Department = (department || 'GENERAL').toUpperCase();
+    if (cardImageUrl !== undefined) prof.CardImageUrl = cleanImageUrl(cardImageUrl) || '';
     if (password?.trim()) prof.Password = await hashPassword(password.trim());
 
     await prof.save();
@@ -349,6 +360,7 @@ function classPayload(cls, extra = {}) {
     level: cls.level,
     progress: cls.progress,
     coverGradient: cls.coverGradient,
+    imageUrl: cls.imageUrl || '',
     professor: cls.professor,
     students: cls.students,
     studentCount: cls.students.length,
@@ -409,7 +421,7 @@ router.get('/classes/:id', async (req, res, next) => {
 
 router.post('/classes', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress, professorId } = req.body;
+    const { name, schedule, level, progress, professorId, imageUrl } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Class name is required' });
     if (!isId(professorId)) {
       return res.status(400).json({ error: 'A professor must be assigned' });
@@ -423,6 +435,7 @@ router.post('/classes', async (req, res, next) => {
       level: level || 'LEVEL 100',
       progress: progress ?? 0,
       coverGradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+      imageUrl: cleanImageUrl(imageUrl) || '',
       professor: prof._id,
     });
     res.status(201).json(classPayload(cls, { professorName: prof.Name, professorId: prof._id }));
@@ -434,7 +447,7 @@ router.post('/classes', async (req, res, next) => {
 router.put('/classes/:id', async (req, res, next) => {
   try {
     if (!isId(req.params.id)) return res.status(400).json({ error: 'Invalid id' });
-    const { name, schedule, level, progress, professorId } = req.body;
+    const { name, schedule, level, progress, professorId, imageUrl } = req.body;
     const cls = await Class.findById(req.params.id);
     if (!cls) return res.status(404).json({ error: 'Class not found' });
 
@@ -448,6 +461,7 @@ router.put('/classes/:id', async (req, res, next) => {
     if (schedule !== undefined) cls.schedule = schedule;
     if (level !== undefined) cls.level = level;
     if (progress !== undefined) cls.progress = progress;
+    if (imageUrl !== undefined) cls.imageUrl = cleanImageUrl(imageUrl) || '';
 
     await cls.save();
     const prof = await User.findById(cls.professor).select('Name');

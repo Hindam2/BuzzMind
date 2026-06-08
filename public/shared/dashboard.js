@@ -80,6 +80,43 @@ const Dash = {
     return this.AVATARS[hash % this.AVATARS.length];
   },
 
+  cssUrl(value) {
+    return String(value || '').trim().replace(/\\/g, '').replace(/"/g, '%22');
+  },
+
+  avatarStyle(seed, avatarUrl) {
+    const url = this.cssUrl(avatarUrl);
+    if (url) {
+      return `background-image:url("${url}");background-size:cover;background-position:center`;
+    }
+    return `background:${this.avatarColor(seed)}`;
+  },
+
+  avatarHTML(name, seed, avatarUrl, cls = 'avatar') {
+    const hasImage = Boolean(String(avatarUrl || '').trim());
+    return `<div class="${cls}" style="${this.avatarStyle(seed || name, avatarUrl)}">${hasImage ? '' : this.escapeHTML(this.initials(name))}</div>`;
+  },
+
+  applyAvatar(el, name, avatarUrl, seed) {
+    if (!el) return;
+    const url = this.cssUrl(avatarUrl);
+    el.style.backgroundImage = '';
+    el.style.backgroundSize = '';
+    el.style.backgroundPosition = '';
+    if (url) {
+      el.textContent = '';
+      el.style.background = 'var(--panel-2)';
+      el.style.backgroundImage = `url("${url}")`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+      el.setAttribute('aria-label', `${name || 'User'} avatar`);
+      return;
+    }
+    el.removeAttribute('aria-label');
+    el.style.background = this.avatarColor(seed || name);
+    el.textContent = this.initials(name);
+  },
+
   fmtDate(d) {
     if (!d) return '—';
     return new Date(d).toLocaleDateString(undefined, {
@@ -164,7 +201,11 @@ const Dash = {
     return `
       <div class="dash-brand">BuzzMind</div>
       <div class="dash-usercard">
-        <div class="av">${me ? this.initials(me.name) : av}</div>
+        ${
+          me
+            ? this.avatarHTML(me.name, me.id || me.name, me.avatarUrl, 'av')
+            : `<div class="av">${av}</div>`
+        }
         <div>
           <div class="nm">${me ? this.escapeHTML(me.name) : (role === 'professor' ? 'Professor' : 'Management')}</div>
           <div class="rl">${this.escapeHTML(role)}</div>
@@ -191,6 +232,41 @@ const Dash = {
     });
   },
 
+  fileSummary(input, emptyText) {
+    const files = Array.from(input?.files || []);
+    if (!files.length) return emptyText || 'No file selected';
+    if (files.length === 1) return files[0].name;
+    return `${files.length} files selected`;
+  },
+
+  syncFilePicker(input) {
+    if (!input) return;
+    const picker = input.closest('.file-picker');
+    if (!picker) return;
+    const label = picker.querySelector('[data-file-label]');
+    const emptyText = label?.dataset.empty || 'No file selected';
+    const hasFiles = Boolean(input.files && input.files.length);
+    picker.classList.toggle('is-filled', hasFiles);
+    if (label) label.textContent = this.fileSummary(input, emptyText);
+  },
+
+  bindFilePickers(root) {
+    (root || document).querySelectorAll('.file-picker input[type="file"]').forEach((input) => {
+      if (input.dataset.filePickerBound) return;
+      input.dataset.filePickerBound = '1';
+      input.addEventListener('change', () => this.syncFilePicker(input));
+      this.syncFilePicker(input);
+    });
+  },
+
+  resetFilePicker(inputOrId) {
+    const input =
+      typeof inputOrId === 'string' ? document.getElementById(inputOrId) : inputOrId;
+    if (!input) return;
+    input.value = '';
+    this.syncFilePicker(input);
+  },
+
   async boot(activeKey) {
     if (typeof BuzzMindAPI === 'undefined') return null;
     try {
@@ -202,7 +278,7 @@ const Dash = {
       const av = document.querySelector('.dash-usercard .av');
       if (nm) nm.textContent = me.name || 'User';
       if (rl) rl.textContent = me.role || '';
-      if (av) av.textContent = this.initials(me.name);
+      this.applyAvatar(av, me.name || 'User', me.avatarUrl, me.id || me.name);
       return me;
     } catch (err) {
       return null;
@@ -212,5 +288,8 @@ const Dash = {
 
 if (typeof window !== 'undefined') window.Dash = Dash;
 if (typeof document !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => Dash.hydrateIcons());
+  document.addEventListener('DOMContentLoaded', () => {
+    Dash.hydrateIcons();
+    Dash.bindFilePickers();
+  });
 }

@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.use(requireAuth);
 
+function cleanImageUrl(value) {
+  if (typeof value !== 'string') return undefined;
+  return value.trim();
+}
+
 router.get('/profile', (req, res) => {
   res.json({
     id: req.user._id,
@@ -15,12 +20,13 @@ router.get('/profile', (req, res) => {
     email: req.user.Email,
     role: req.user.Role,
     department: req.user.Department,
+    avatarUrl: req.user.AvatarUrl || '',
   });
 });
 
 router.put('/profile', async (req, res, next) => {
   try {
-    const { name, email, username } = req.body;
+    const { name, email, username, avatarUrl } = req.body;
     if (!name?.trim()) {
       return res.status(400).json({ error: 'Display name is required' });
     }
@@ -48,7 +54,12 @@ router.put('/profile', async (req, res, next) => {
 
     const user = await User.findByIdAndUpdate(
       req.user._id,
-      { Name: name.trim(), Email: emailTrim, Username: usernameTrim },
+      {
+        Name: name.trim(),
+        Email: emailTrim,
+        Username: usernameTrim,
+        ...(avatarUrl !== undefined && { AvatarUrl: cleanImageUrl(avatarUrl) || '' }),
+      },
       { new: true },
     ).select('-Password');
 
@@ -58,6 +69,7 @@ router.put('/profile', async (req, res, next) => {
       username: user.Username,
       email: user.Email,
       role: user.Role,
+      avatarUrl: user.AvatarUrl || '',
     });
   } catch (err) {
     next(err);

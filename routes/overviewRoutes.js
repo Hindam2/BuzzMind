@@ -107,6 +107,7 @@ router.get('/student/:id', async (req, res, next) => {
         username: student.Username,
         department: student.Department,
         role: student.Role,
+        avatarUrl: student.AvatarUrl || '',
         createdAt: student.createdAt,
       },
       stats: {
@@ -177,6 +178,7 @@ router.get('/professor/:id', async (req, res, next) => {
         username: prof.Username,
         department: prof.Department,
         role: prof.Role,
+        avatarUrl: prof.AvatarUrl || '',
         createdAt: prof.createdAt,
       },
       stats: {

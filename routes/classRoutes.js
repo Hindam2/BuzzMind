@@ -1,6 +1,9 @@
 const express = require('express');
 const Class = require('../models/Class');
 const User = require('../models/User');
+const Quiz = require('../models/Quiz');
+const GameSession = require('../models/GameSession');
+const QuizResult = require('../models/QuizResult');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
@@ -11,6 +14,71 @@ const GRADIENTS = [
   'linear-gradient(135deg,#0d001a,#1a0033)',
   'linear-gradient(135deg,#0f2027,#203a43)',
 ];
+
+function cleanImageUrl(value) {
+  if (typeof value !== 'string') return undefined;
+  return value.trim();
+}
+
+async function withStudentScores(cls) {
+  const payload = cls.toObject ? cls.toObject() : { ...cls };
+  const studentIds = (payload.students || [])
+    .map((student) => student.userId)
+    .filter(Boolean);
+  const quizzes = await Quiz.find({ classId: cls._id }).select('_id');
+  const quizIds = quizzes.map((quiz) => quiz._id);
+  const sessions = quizIds.length
+    ? await GameSession.find({ quiz: { $in: quizIds } }).select('_id')
+    : [];
+  const sessionIds = sessions.map((session) => session._id);
+
+  const [accuracyAgg, users] = await Promise.all([
+    sessionIds.length && studentIds.length
+      ? QuizResult.aggregate([
+          {
+            $match: {
+              sessionId: { $in: sessionIds },
+              userId: { $in: studentIds },
+            },
+          },
+          {
+            $group: {
+              _id: '$userId',
+              avgAccuracy: { $avg: '$accuracy' },
+              attempts: { $sum: 1 },
+            },
+          },
+        ])
+      : [],
+    studentIds.length
+      ? User.find({ _id: { $in: studentIds } }).select('AvatarUrl')
+      : [],
+  ]);
+
+  const avatarByStudent = new Map(users.map((user) => [String(user._id), user.AvatarUrl || '']));
+  const accuracyByStudent = new Map(
+    accuracyAgg.map((row) => [
+      String(row._id),
+      {
+        averageScore: Number.isFinite(row.avgAccuracy) ? Math.round(row.avgAccuracy) : null,
+        attempts: Number(row.attempts) || 0,
+      },
+    ]),
+  );
+
+  payload.students = (payload.students || []).map((student) => {
+    const userId = student.userId ? String(student.userId) : '';
+    const accuracy = userId ? accuracyByStudent.get(userId) : null;
+    return {
+      ...student,
+      avatarUrl: userId ? avatarByStudent.get(userId) || '' : '',
+      averageScore: accuracy ? accuracy.averageScore : null,
+      accuracyAttempts: accuracy ? accuracy.attempts : 0,
+    };
+  });
+
+  return payload;
+}
 
 router.use(requireAuth, requireRole('professor'));
 
@@ -27,7 +95,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress } = req.body;
+    const { name, schedule, level, progress, imageUrl } = req.body;
     if (!name?.trim()) {
       return res.status(400).json({ error: 'Class name is required' });
     }
@@ -37,6 +105,7 @@ router.post('/', async (req, res, next) => {
       level: level || 'LEVEL 100',
       progress: progress ?? 0,
       coverGradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+      imageUrl: cleanImageUrl(imageUrl) || '',
       professor: req.user._id,
     });
     res.status(201).json(cls);
@@ -52,7 +121,7 @@ router.get('/:id', async (req, res, next) => {
       professor: req.user._id,
     });
     if (!cls) return res.status(404).json({ error: 'Class not found' });
-    res.json(cls);
+    res.json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }
@@ -60,7 +129,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress } = req.body;
+    const { name, schedule, level, progress, imageUrl } = req.body;
     const cls = await Class.findOneAndUpdate(
       { _id: req.params.id, professor: req.user._id },
       {
@@ -68,6 +137,7 @@ router.put('/:id', async (req, res, next) => {
         ...(schedule !== undefined && { schedule }),
         ...(level !== undefined && { level }),
         ...(progress !== undefined && { progress }),
+        ...(imageUrl !== undefined && { imageUrl: cleanImageUrl(imageUrl) || '' }),
       },
       { new: true },
     );
@@ -133,7 +203,7 @@ router.post('/:id/students', async (req, res, next) => {
       emoji: emoji || '',
     });
     await cls.save();
-    res.status(201).json(cls);
+    res.status(201).json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }
@@ -158,7 +228,7 @@ router.put('/:id/students/:studentId', async (req, res, next) => {
     if (emoji) student.emoji = emoji;
 
     await cls.save();
-    res.json(cls);
+    res.json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }
@@ -176,7 +246,7 @@ router.delete('/:id/students/:studentId', async (req, res, next) => {
     if (!student) return res.status(404).json({ error: 'Student not found' });
     student.deleteOne();
     await cls.save();
-    res.json(cls);
+    res.json(await withStudentScores(cls));
   } catch (err) {
     next(err);
   }

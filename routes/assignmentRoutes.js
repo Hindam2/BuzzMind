@@ -180,14 +180,19 @@ router.get('/:id', async (req, res, next) => {
     if (isOwner) {
       const submissions = await Submission.find({ assignment: assignment._id }).populate(
         'student',
-        'Name Email Username',
+        'Name Email Username AvatarUrl',
       );
       return res.json({
         ...assignmentBase(assignment, cls?.name),
         submissions: submissions.map((s) => ({
           id: s._id,
           student: s.student
-            ? { id: s.student._id, name: s.student.Name, email: s.student.Email }
+            ? {
+                id: s.student._id,
+                name: s.student.Name,
+                email: s.student.Email,
+                avatarUrl: s.student.AvatarUrl || '',
+              }
             : null,
           status: s.status,
           grade: s.grade,
@@ -349,13 +354,18 @@ router.get('/:id/submissions', requireRole('professor', 'admin'), async (req, re
 
     const submissions = await Submission.find({ assignment: assignment._id }).populate(
       'student',
-      'Name Email Username',
+      'Name Email Username AvatarUrl',
     );
     res.json(
       submissions.map((s) => ({
         id: s._id,
         student: s.student
-          ? { id: s.student._id, name: s.student.Name, email: s.student.Email }
+          ? {
+              id: s.student._id,
+              name: s.student.Name,
+              email: s.student.Email,
+              avatarUrl: s.student.AvatarUrl || '',
+            }
           : null,
         status: s.status,
         grade: s.grade,

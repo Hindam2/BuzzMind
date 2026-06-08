@@ -88,7 +88,7 @@
 
     document.getElementById('content').innerHTML = `
       <div class="panel" style="display:flex;gap:16px;align-items:center">
-        <div class="avatar" style="width:64px;height:64px;font-size:24px;background:${Dash.avatarColor(p.id)}">${E(Dash.initials(p.name))}</div>
+        ${Dash.avatarHTML(p.name, p.id, p.avatarUrl).replace('style="', 'style="width:64px;height:64px;font-size:24px;')}
         <div>
           <h2 style="margin:0">${E(p.name)}</h2>
           <div class="muted">@${E(p.username)} · ${E(p.email)}</div>

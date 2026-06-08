@@ -52,6 +52,13 @@ const BuzzMindAPI = {
     return this.request(`/api/classes/${id}`);
   },
 
+  updateClass(classId, body) {
+    return this.request(`/api/classes/${classId}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
   addStudent(classId, body) {
     return this.request(`/api/classes/${classId}/students`, {
       method: 'POST',

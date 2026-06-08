@@ -2,6 +2,7 @@ let students = [];
 let editingId = null;
 let classId = null;
 let drafts = [];
+let currentClass = null;
 
 function getClassIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -49,18 +50,33 @@ function initials(name) {
 }
 
 function gradeClass(g) {
-  if (g >= 85) return 'grade-high';
-  if (g >= 70) return 'grade-mid';
+  const grade = Number(g);
+  if (!Number.isFinite(grade)) return 'grade-empty';
+  if (grade >= 85) return 'grade-high';
+  if (grade >= 70) return 'grade-mid';
   return 'grade-low';
 }
 
-function participationBars(count) {
-  let bars = '';
-  for (let i = 1; i <= 4; i++) {
-    const h = 8 + i * 5;
-    bars += `<div class="bar ${i <= count ? '' : 'empty'}" style="height:${h}px"></div>`;
+function boundedNumber(value, min, max) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function updateClassSummary(cls) {
+  const enrolled = students.length;
+  const title = document.querySelector('#class-banner-title');
+  const copy = document.querySelector('#class-banner-copy');
+  const enrolledBadge = document.querySelector('.enrolled-badge');
+
+  if (title) title.textContent = cls?.name ? `${cls.name} snapshot` : 'Classroom snapshot';
+  if (copy) {
+    copy.textContent = cls
+      ? `${enrolled} enrolled student${enrolled === 1 ? '' : 's'}.`
+      : 'Open a class from My Classrooms to manage roster data.';
   }
-  return `<div class="participation-bars">${bars}</div>`;
+  if (enrolledBadge) enrolledBadge.textContent = `${enrolled} Enrolled`;
 }
 
 function mapStudent(s) {
@@ -68,8 +84,9 @@ function mapStudent(s) {
     id: s._id,
     name: s.name,
     email: s.email,
-    grade: s.grade,
-    participation: s.participation,
+    averageScore: boundedNumber(s.averageScore, 0, 100),
+    accuracyAttempts: Number(s.accuracyAttempts) || 0,
+    avatarUrl: s.avatarUrl || '',
     emoji: s.emoji || '',
   };
 }
@@ -130,7 +147,7 @@ async function loadDrafts() {
     renderDrafts();
     setDraftMessage(
       drafts.length
-        ? 'Choose a draft, then attach it to this class.'
+        ? 'Choose any draft quiz, then attach it to this class.'
         : 'No drafts yet. Save a draft from Quiz Builder first.',
     );
   } catch (err) {
@@ -155,6 +172,8 @@ function showLaunchResult(session) {
 async function launchSelectedDraft() {
   const select = document.querySelector('#draft-select');
   const quizId = select?.value;
+  const timeInput = document.querySelector('#draft-time');
+  const totalTime = Number(timeInput?.value);
   classId = classId || getClassIdFromUrl();
 
   if (!classId) {
@@ -165,11 +184,18 @@ async function launchSelectedDraft() {
     setDraftMessage('Choose a draft quiz first.', 'error');
     return;
   }
+  if (!Number.isFinite(totalTime) || totalTime < 5 || totalTime > 120) {
+    setDraftMessage('Quiz time must be between 5 and 120 minutes.', 'error');
+    return;
+  }
 
   setDraftControlsDisabled(true);
   setDraftMessage('Attaching draft and creating live session...');
   try {
-    const session = await BuzzMindAPI.launchQuiz(quizId, { classId });
+    const session = await BuzzMindAPI.launchQuiz(quizId, {
+      classId,
+      totalTime: Math.round(totalTime),
+    });
     sessionStorage.setItem('gameSessionId', session.sessionId);
     sessionStorage.setItem('gamePin', session.pin);
     showLaunchResult(session);
@@ -190,31 +216,47 @@ function renderRoster(list) {
   const tbody = document.querySelector('#roster-body');
   tbody.innerHTML = '';
 
+  document.querySelector('#roster-count').textContent =
+    `Showing ${list.length} of ${students.length} students`;
+  updateClassSummary(currentClass);
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="roster-empty-row"><td colspan="3">${
+      students.length ? 'No students match your search.' : 'No students enrolled yet.'
+    }</td></tr>`;
+    return;
+  }
+
   list.forEach((s) => {
     const tr = document.createElement('tr');
-    const avatar = s.emoji || initials(s.name);
+    const fallbackAvatar = s.emoji || initials(s.name);
+    const avatar = window.Dash?.avatarHTML
+      ? Dash.avatarHTML(s.name, s.id || s.email, s.avatarUrl, 'student-avatar')
+      : `<div class="student-avatar">${escapeHTML(fallbackAvatar)}</div>`;
+    const scoreText = s.averageScore === null ? '--' : `${s.averageScore}%`;
+    const scoreTitle = s.accuracyAttempts
+      ? ` title="${escapeHTML(`${s.accuracyAttempts} quiz attempt${s.accuracyAttempts === 1 ? '' : 's'}`)}"`
+      : '';
     tr.innerHTML = `
       <td>
         <div class="student-info">
-          <div class="student-avatar">${escapeHTML(avatar)}</div>
+          ${avatar}
           <div>
             <div class="student-name">${escapeHTML(s.name)}</div>
             <div class="student-email">${escapeHTML(s.email)}</div>
           </div>
         </div>
       </td>
-      <td><span class="grade-badge ${gradeClass(s.grade)}">${escapeHTML(s.grade)}%</span></td>
-      <td>${participationBars(s.participation)}</td>
+      <td><span class="grade-badge ${gradeClass(s.averageScore)}"${scoreTitle}>${escapeHTML(scoreText)}</span></td>
       <td>
         <div class="action-btns">
-          <button class="btn-delete" data-id="${escapeHTML(s.id)}" type="button">Delete</button>
+          <button class="btn-delete" data-id="${escapeHTML(s.id)}" type="button" title="Delete student" aria-label="Delete ${escapeHTML(s.name)}">
+            <span class="ic">${window.Dash ? Dash.icon('trash') : ''}</span>
+          </button>
         </div>
       </td>`;
     tbody.appendChild(tr);
   });
-
-  document.querySelector('#roster-count').textContent =
-    `Showing ${list.length} of ${students.length} students`;
 
   document.querySelectorAll('.btn-delete').forEach((btn) => {
     btn.addEventListener('click', async () => {
@@ -223,12 +265,13 @@ function renderRoster(list) {
         try {
           const cls = await BuzzMindAPI.deleteStudent(classId, id);
           students = cls.students.map(mapStudent);
+          currentClass = cls;
         } catch (err) {
           console.error(err);
           return;
         }
       } else {
-        students = students.filter((s) => s.id !== id);
+        return;
       }
       renderRoster(students);
     });
@@ -238,38 +281,25 @@ function renderRoster(list) {
 async function loadClassRoster() {
   classId = getClassIdFromUrl();
   if (!classId || typeof BuzzMindAPI === 'undefined') {
-    students = [
-      {
-        id: '1',
-        name: 'Alex "Neutron" Rivera',
-        email: 'alex.rivera@buzzmind.com',
-        grade: 94,
-        participation: 4,
-        emoji: '',
-      },
-      {
-        id: '2',
-        name: 'Luna Stark',
-        email: 'luna.stark@buzzmind.com',
-        grade: 89,
-        participation: 3,
-        emoji: '',
-      },
-    ];
+    currentClass = null;
+    students = [];
+    const title = document.querySelector('.page-title, h1, .class-title, .current-class-name');
+    if (title) title.textContent = 'Classroom Management';
     renderRoster(students);
     return;
   }
 
   try {
     const cls = await BuzzMindAPI.getClass(classId);
+    currentClass = cls;
     students = cls.students.map(mapStudent);
     const title = document.querySelector('.page-title, h1, .class-title, .current-class-name');
     if (title) title.textContent = cls.name;
-    const enrolled = document.querySelector('.enrolled-badge');
-    if (enrolled) enrolled.textContent = `${students.length} Enrolled`;
     renderRoster(students);
   } catch (err) {
     console.error(err);
+    currentClass = null;
+    students = [];
     renderRoster([]);
   }
 }
@@ -312,23 +342,18 @@ document.querySelector('#confirm-add').onclick = async () => {
     return;
   }
 
-  if (classId && typeof BuzzMindAPI !== 'undefined') {
-    try {
-      const cls = await BuzzMindAPI.addStudent(classId, { name, email });
-      students = cls.students.map(mapStudent);
-    } catch (err) {
-      showError('#add-email-error', err.message);
-      return;
-    }
-  } else {
-    students.push({
-      id: String(Date.now()),
-      name,
-      email,
-      grade: 80,
-      participation: 3,
-      emoji: '',
-    });
+  if (!classId || typeof BuzzMindAPI === 'undefined') {
+    showError('#add-email-error', 'Open a saved class before adding students.');
+    return;
+  }
+
+  try {
+    const cls = await BuzzMindAPI.addStudent(classId, { name, email });
+    currentClass = cls;
+    students = cls.students.map(mapStudent);
+  } catch (err) {
+    showError('#add-email-error', err.message);
+    return;
   }
 
   addModal.style.display = 'none';

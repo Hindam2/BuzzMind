@@ -69,7 +69,14 @@
       </div>
       <div class="field">
         <label>Attachments <span class="hint">(brief, rubric, PDF/Word — optional)</span></label>
-        <input type="file" id="aFiles" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,image/*" />
+        <div class="file-picker">
+          <input type="file" id="aFiles" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,image/*" />
+          <label class="file-picker-btn" for="aFiles">
+            <span class="ic" data-icon="paperclip"></span>
+            Add files
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No new files selected">No new files selected</span>
+        </div>
         <div id="attachChips" class="chips" style="margin-top:10px"></div>
       </div>
       <div class="modal-actions">
@@ -189,6 +196,7 @@
     document.getElementById('assignForm').reset();
     document.getElementById('aId').value = '';
     document.getElementById('aPoints').value = '100';
+    Dash.resetFilePicker('aFiles');
     pendingAttachments = [];
     renderChips();
     fillClassOptions();
@@ -201,6 +209,7 @@
 
   function openEdit(a) {
     document.getElementById('assignForm').reset();
+    Dash.resetFilePicker('aFiles');
     fillClassOptions();
     document.getElementById('aId').value = a.id;
     document.getElementById('aTitle').value = a.title;
@@ -230,7 +239,7 @@
         Dash.toast(err.message || `Could not upload ${f.name}`, 'error');
       }
     }
-    e.target.value = '';
+    Dash.resetFilePicker(e.target);
     setAlert('');
     renderChips();
   }
@@ -295,7 +304,7 @@
       : `<span class="badge" style="background:rgba(109,94,252,.18);color:var(--brand-2)">awaiting grade</span>`;
     return `<div class="panel" data-sid="${s.id}" style="margin-bottom:12px">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <div class="avatar" style="background:${Dash.avatarColor(s.id)}">${E(Dash.initials(name))}</div>
+        ${Dash.avatarHTML(name, s.student?.id || s.id, s.student?.avatarUrl)}
         <div style="flex:1;min-width:0">
           <strong>${E(name)}</strong>
           <div class="muted" style="font-size:12px">${s.student ? E(s.student.email) : ''} · ${Dash.fmtDateTime(s.submittedAt)}</div>

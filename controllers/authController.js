@@ -137,7 +137,7 @@ function getCurrentUser(req, res) {
     email: req.user.Email,
     role: req.user.Role,
     department: req.user.Department,
-    emoji: req.user.Emoji,
+    avatarUrl: req.user.AvatarUrl || '',
   });
 }
 

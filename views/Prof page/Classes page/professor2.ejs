@@ -40,10 +40,6 @@
           <div class="stat-ic"><span class="ic" data-icon="bar-chart"></span></div>
           <div><div class="lbl">Avg. progress</div><div class="num" id="sProgress">—</div></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-ic a"><span class="ic" data-icon="award"></span></div>
-          <div><div class="lbl">Levels</div><div class="num" id="sLevels">—</div></div>
-        </div>
       </div>
 
       <div class="grid" id="cgrid"><div class="empty">Loading classes…</div></div>
@@ -62,15 +58,21 @@
         <label>Class name</label>
         <input type="text" id="cmName" placeholder="Advanced Physics" required />
       </div>
-      <div class="form-row">
-        <div class="field">
-          <label>Schedule</label>
-          <input type="text" id="cmSchedule" placeholder="MWF · 10:00 AM" />
+      <div class="field">
+        <label>Schedule</label>
+        <input type="text" id="cmSchedule" placeholder="MWF · 10:00 AM" />
+      </div>
+      <div class="field">
+        <label>Class photo <span class="hint">(optional)</span></label>
+        <div class="file-picker">
+          <input type="file" id="cmImage" accept="image/*" />
+          <label class="file-picker-btn" for="cmImage">
+            <span class="ic" data-icon="image"></span>
+            Choose photo
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No photo selected">No photo selected</span>
         </div>
-        <div class="field">
-          <label>Level</label>
-          <input type="text" id="cmLevel" placeholder="LEVEL 100" />
-        </div>
+        <div class="hint">Default clock icon is used if no photo is selected.</div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" id="cmCancel">Cancel</button>
@@ -98,33 +100,72 @@
     const avg = classes.length
       ? Math.round(classes.reduce((n, c) => n + (c.progress || 0), 0) / classes.length)
       : 0;
-    const levels = new Set(classes.map((c) => (c.level || 'LEVEL 100').toUpperCase()));
     document.getElementById('sClasses').textContent = classes.length;
     document.getElementById('sStudents').textContent = students;
     document.getElementById('sProgress').textContent = avg + '%';
-    document.getElementById('sLevels').textContent = levels.size;
+  }
+
+  function classArtHtml(classItem) {
+    const imageUrl = classItem.imageUrl || '';
+    if (imageUrl) {
+      return `<div class="card-art"><img src="${E(imageUrl)}" alt="${E(classItem.name)} class photo"></div>`;
+    }
+    return `<div class="card-art card-art-icon" aria-label="Default class photo">${Dash.icon('clock')}</div>`;
+  }
+
+  async function uploadSelectedImage(input) {
+    const imageFile = input.files && input.files[0];
+    if (!imageFile) return '';
+    const meta = await BuzzMindAPI.uploadFile(imageFile);
+    return meta.url || '';
+  }
+
+  async function updateClassImage(classItem, input, btn) {
+    const imageFile = input.files && input.files[0];
+    if (!imageFile) return;
+    btn.disabled = true;
+    try {
+      const uploadedImageUrl = await uploadSelectedImage(input);
+      if (!uploadedImageUrl) return;
+      const updated = await BuzzMindAPI.updateClass(classItem._id, { imageUrl: uploadedImageUrl });
+      classItem.imageUrl = updated.imageUrl || uploadedImageUrl;
+      Dash.resetFilePicker(input);
+      render();
+      Dash.toast('Class photo updated.');
+    } catch (err) {
+      Dash.toast(err.message || 'Could not update class photo', 'error');
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   function cardHtml(c) {
     const count = c.students ? c.students.length : 0;
-    const progress = c.progress || 0;
-    const cover = c.coverGradient || 'linear-gradient(135deg,#6d5efc,#8b6bff)';
-    return `<div class="card" data-id="${c._id}" style="padding:0;overflow:hidden">
-      <div style="height:74px;background:${E(cover)};position:relative">
-        <span class="badge b-muted" style="position:absolute;top:12px;left:14px;background:rgba(255,255,255,.85);color:#1c2240">${E(c.level || 'LEVEL 100')}</span>
-      </div>
-      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
-        <h3 style="margin:0">${E(c.name)}</h3>
-        <div class="meta" style="margin:0">${Dash.icon('clock')} ${E(c.schedule || 'Schedule TBD')}</div>
-        <div class="row-between" style="font-size:12px;color:var(--muted)">
-          <span>COURSE PROGRESS</span><span>${progress}%</span>
+    const progress = Math.max(0, Math.min(100, Number(c.progress) || 0));
+    return `<div class="card class-card" data-id="${c._id}">
+      ${classArtHtml(c)}
+      <div class="class-card-body">
+        <div class="class-card-head">
+          <div style="min-width:0">
+            <h3 class="class-card-title">${E(c.name)}</h3>
+            <div class="meta"><span class="ic">${Dash.icon('calendar')}</span>${E(c.schedule || 'Schedule TBD')}</div>
+          </div>
+          <span class="badge b-purple">${progress}%</span>
         </div>
-        <div class="bar"><div class="bar-fill g" style="width:${progress}%"></div></div>
-        <div class="card-foot" style="margin-top:4px">
+        <div class="class-card-progress">
+          <div class="row-between">
+            <span>Course progress</span>
+            <span>${progress}%</span>
+          </div>
+          <div class="bar"><div class="bar-fill g" style="width:${progress}%"></div></div>
+        </div>
+        <div class="card-foot class-card-foot">
           <span class="badge b-green">${count} student${count === 1 ? '' : 's'}</span>
-          <div style="display:flex;gap:6px;margin-left:auto">
-            <button class="btn btn-sm btn-danger" data-act="del" type="button"><span class="ic">${Dash.icon('trash')}</span></button>
-            <button class="btn btn-sm btn-primary" data-act="manage" type="button">Manage</button>
+          <div class="class-card-actions">
+            <button class="btn btn-sm" data-act="image" type="button"><span class="ic">${Dash.icon('upload')}</span> Photo</button>
+            <input type="file" data-act="image-input" accept="image/*" hidden />
+            <button class="btn btn-sm btn-danger btn-icon" data-act="del" type="button" title="Delete class" aria-label="Delete ${E(c.name)}"><span class="ic">${Dash.icon('trash')}</span></button>
+            <button class="btn btn-sm btn-primary" data-act="manage" type="button"><span class="ic">${Dash.icon('settings')}</span> Manage</button>
           </div>
         </div>
       </div>
@@ -141,6 +182,10 @@
     grid.innerHTML = list.map(cardHtml).join('');
     grid.querySelectorAll('.card').forEach((card) => {
       const c = classes.find((x) => x._id === card.dataset.id);
+      const imageBtn = card.querySelector('[data-act="image"]');
+      const imageInput = card.querySelector('[data-act="image-input"]');
+      imageBtn.addEventListener('click', () => imageInput.click());
+      imageInput.addEventListener('change', () => updateClassImage(c, imageInput, imageBtn));
       card.querySelector('[data-act="manage"]').addEventListener('click', () => { location.href = manageHref(c._id); });
       card.querySelector('[data-act="del"]').addEventListener('click', () => removeClass(c));
     });
@@ -165,6 +210,7 @@
 
   function openCreate() {
     document.getElementById('classForm').reset();
+    Dash.resetFilePicker('cmImage');
     setAlert('');
     Dash.openModal('classModal');
     document.getElementById('cmName').focus();
@@ -175,12 +221,13 @@
     const body = {
       name: document.getElementById('cmName').value.trim(),
       schedule: document.getElementById('cmSchedule').value.trim(),
-      level: document.getElementById('cmLevel').value.trim(),
     };
     if (!body.name) { setAlert('Class name is required.'); return; }
     const btn = document.getElementById('cmSave');
     btn.disabled = true;
     try {
+      const uploadedImageUrl = await uploadSelectedImage(document.getElementById('cmImage'));
+      if (uploadedImageUrl) body.imageUrl = uploadedImageUrl;
       await BuzzMindAPI.createClass(body);
       Dash.closeModal('classModal');
       Dash.toast('Class created.');

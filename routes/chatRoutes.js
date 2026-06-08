@@ -34,7 +34,7 @@ async function contactCandidates(me) {
   if (me.Role === 'student') {
     const classes = await Class.find({ 'students.userId': me._id }).select('professor');
     const ids = [...new Set(classes.map((c) => String(c.professor)))];
-    return User.find({ _id: { $in: ids }, Role: 'professor' }).select('Name Email Role Department');
+    return User.find({ _id: { $in: ids }, Role: 'professor' }).select('Name Email Role Department AvatarUrl');
   }
   if (me.Role === 'professor') {
     const classes = await Class.find({ professor: me._id }).select('students');
@@ -43,11 +43,11 @@ async function contactCandidates(me) {
         classes.flatMap((c) => c.students.map((s) => s.userId).filter(Boolean).map(String)),
       ),
     ];
-    return User.find({ _id: { $in: ids }, Role: 'student' }).select('Name Email Role Department');
+    return User.find({ _id: { $in: ids }, Role: 'student' }).select('Name Email Role Department AvatarUrl');
   }
   // admin
   return User.find({ Role: { $in: ['professor', 'student'] } })
-    .select('Name Email Role Department')
+    .select('Name Email Role Department AvatarUrl')
     .limit(200);
 }
 
@@ -82,6 +82,7 @@ router.get('/contacts', async (req, res, next) => {
           email: u.Email,
           role: u.Role,
           department: u.Department,
+          avatarUrl: u.AvatarUrl || '',
           lastMessage: last ? last.text : '',
           lastAt: last ? last.createdAt : null,
           unread: unreadByOther.get(String(u._id)) || 0,
@@ -117,7 +118,7 @@ router.get('/unread', async (req, res, next) => {
 router.get('/with/:userId', async (req, res, next) => {
   try {
     if (!isId(req.params.userId)) return res.status(400).json({ error: 'Invalid id' });
-    const other = await User.findById(req.params.userId).select('Name Email Role Department');
+    const other = await User.findById(req.params.userId).select('Name Email Role Department AvatarUrl');
     if (!(await canChat(req.user, other))) {
       return res.status(403).json({ error: 'You cannot message this user' });
     }
@@ -137,7 +138,13 @@ router.get('/with/:userId', async (req, res, next) => {
     );
 
     res.json({
-      contact: { id: other._id, name: other.Name, role: other.Role, email: other.Email },
+      contact: {
+        id: other._id,
+        name: other.Name,
+        role: other.Role,
+        email: other.Email,
+        avatarUrl: other.AvatarUrl || '',
+      },
       messages: messages.map((m) => ({
         id: m._id,
         text: m.text,

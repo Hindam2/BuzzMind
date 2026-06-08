@@ -40,6 +40,18 @@
         <label>Class name</label>
         <input type="text" id="cName" placeholder="Quantum Mechanics 402" required />
       </div>
+      <div class="field">
+        <label>Class photo <span class="hint">(optional)</span></label>
+        <div class="file-picker">
+          <input type="file" id="cImage" accept="image/*" />
+          <label class="file-picker-btn" for="cImage">
+            <span class="ic" data-icon="image"></span>
+            Choose photo
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No photo selected">No photo selected</span>
+        </div>
+        <div class="hint">Default person icon is used if no photo is selected.</div>
+      </div>
       <div class="form-row">
         <div class="field">
           <label>Schedule</label>
@@ -70,6 +82,21 @@
       <button type="button" class="btn btn-sm btn-ghost" id="manageClose">Close</button>
     </div>
     <div class="modal-sub" id="mMeta"></div>
+
+    <div class="section-title">Class photo</div>
+    <div class="form-row">
+      <div class="field" style="margin:0">
+        <div class="file-picker compact">
+          <input type="file" id="mImage" accept="image/*" />
+          <label class="file-picker-btn" for="mImage">
+            <span class="ic" data-icon="image"></span>
+            Choose photo
+          </label>
+          <span class="file-picker-text" data-file-label data-empty="No photo selected">No photo selected</span>
+        </div>
+      </div>
+      <button type="button" class="btn" id="mUpdateImage"><span class="ic" data-icon="upload"></span> Update photo</button>
+    </div>
 
     <div class="section-title">Professor</div>
     <div class="form-row">
@@ -124,14 +151,30 @@
       .join('');
   }
 
+  function classArtHtml(classItem) {
+    const imageUrl = classItem.imageUrl || '';
+    if (imageUrl) {
+      return `<div class="card-art"><img src="${E(imageUrl)}" alt="${E(classItem.name)} class photo"></div>`;
+    }
+    return `<div class="card-art card-art-icon" aria-label="Default class photo">${Dash.icon('user')}</div>`;
+  }
+
+  async function uploadSelectedImage(input) {
+    const imageFile = input.files && input.files[0];
+    if (!imageFile) return '';
+    const meta = await BuzzMindAPI.uploadFile(imageFile);
+    return meta.url || '';
+  }
+
   function cardHtml(c) {
     return `<div class="card" data-id="${c.id}">
       <div class="row-between">
         <h3>${E(c.name)}</h3>
         <span class="badge b-muted">${E(c.level || 'LEVEL 100')}</span>
       </div>
-      <div class="meta">${Dash.icon('user')} ${E(c.professorName || 'Unassigned')}</div>
-      <div class="meta">${Dash.icon('calendar')} ${E(c.schedule || 'Schedule TBD')}</div>
+      ${classArtHtml(c)}
+      <div class="meta"><span class="ic">${Dash.icon('user')}</span> ${E(c.professorName || 'Unassigned')}</div>
+      <div class="schedule-copy"><span>Schedule</span><strong>${E(c.schedule || 'Schedule TBD')}</strong></div>
       <div class="row-between">
         <span class="badge b-green">${c.studentCount || 0} students</span>
       </div>
@@ -189,9 +232,12 @@
     if (!body.name) { setCreateAlert('Class name is required.'); return; }
     if (!body.professorId) { setCreateAlert('Please assign a professor.'); return; }
     try {
+      const uploadedImageUrl = await uploadSelectedImage(document.getElementById('cImage'));
+      if (uploadedImageUrl) body.imageUrl = uploadedImageUrl;
       await BuzzMindAPI.createAdminClass(body);
       Dash.closeModal('createModal');
       document.getElementById('createForm').reset();
+      Dash.resetFilePicker('cImage');
       Dash.toast('Class created.');
       await loadAll();
     } catch (err) {
@@ -219,6 +265,7 @@
     }
     document.getElementById('mName').textContent = current.name;
     document.getElementById('mMeta').textContent = `${current.schedule || 'Schedule TBD'} · ${current.level || ''}`;
+    Dash.resetFilePicker('mImage');
     document.getElementById('mProf').innerHTML = profOptions(current.professorId);
     document.getElementById('mQuiz').innerHTML =
       '<option value="">Select a quiz to attach…</option>' +
@@ -293,6 +340,30 @@
       await loadAll();
     } catch (err) {
       Dash.toast(err.message || 'Could not reassign', 'error');
+    }
+  }
+
+  async function updateClassImage() {
+    const input = document.getElementById('mImage');
+    const imageFile = input.files && input.files[0];
+    if (!current || !imageFile) {
+      Dash.toast('Choose an image first.', 'error');
+      return;
+    }
+    const btn = document.getElementById('mUpdateImage');
+    btn.disabled = true;
+    try {
+      const uploadedImageUrl = await uploadSelectedImage(input);
+      if (!uploadedImageUrl) return;
+      const updated = await BuzzMindAPI.updateAdminClass(current.id, { imageUrl: uploadedImageUrl });
+      current.imageUrl = updated.imageUrl || uploadedImageUrl;
+      Dash.resetFilePicker(input);
+      await refreshCard(current.id);
+      Dash.toast('Class photo updated.');
+    } catch (err) {
+      Dash.toast(err.message || 'Could not update class photo', 'error');
+    } finally {
+      btn.disabled = false;
     }
   }
 
@@ -379,11 +450,17 @@
     } catch (_) {}
   }
 
-  document.getElementById('addBtn').addEventListener('click', () => Dash.openModal('createModal'));
+  document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('createForm').reset();
+    Dash.resetFilePicker('cImage');
+    setCreateAlert('');
+    Dash.openModal('createModal');
+  });
   document.getElementById('createCancel').addEventListener('click', () => Dash.closeModal('createModal'));
   document.getElementById('createForm').addEventListener('submit', submitCreate);
   document.getElementById('manageClose').addEventListener('click', () => Dash.closeModal('manageModal'));
   document.getElementById('mReassign').addEventListener('click', reassign);
+  document.getElementById('mUpdateImage').addEventListener('click', updateClassImage);
   document.getElementById('mAddStudent').addEventListener('click', addStudent);
   document.getElementById('mAttachQuiz').addEventListener('click', attachQuiz);
   [document.getElementById('createModal'), document.getElementById('manageModal')].forEach((m) => {

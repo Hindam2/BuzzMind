@@ -120,7 +120,7 @@
       : '';
     return `<tr data-id="${u.id}">
       <td><div style="display:flex;gap:10px;align-items:center">
-        <div class="avatar" style="background:${Dash.avatarColor(u.id)}">${E(Dash.initials(u.name))}</div>
+        ${Dash.avatarHTML(u.name, u.id, u.avatarUrl)}
         <strong>${E(u.name)}</strong></div></td>
       <td class="muted">${E(u.email)}</td>
       <td class="muted">${E(u.username)}</td>

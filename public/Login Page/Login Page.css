@@ -279,6 +279,71 @@ input:focus {
     filter: brightness(1.03);
 }
 
+.secondary-btn {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    background: #f3eefc;
+    color: var(--purple-dark);
+    border: 1px solid rgba(124, 58, 237, 0.18);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+}
+
+.secondary-btn:hover {
+    background: #ede8fc;
+}
+
+.cta-btn:disabled,
+.secondary-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.inline-error {
+    color: red;
+    font-size: 0.75rem;
+}
+
+.timer-text {
+    min-height: 22px;
+    margin: 10px 0 4px;
+    color: #6b639a;
+    font-size: 0.86rem;
+}
+
+.code-field {
+    margin-top: 8px;
+}
+
+.reset-status {
+    min-height: 24px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #6b639a;
+}
+
+.reset-status.success {
+    color: #166534;
+}
+
+.reset-status.error {
+    color: #991b1b;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 18px;
+    color: var(--purple-dark);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
 
 @media (max-width: 480px) {
     .card {

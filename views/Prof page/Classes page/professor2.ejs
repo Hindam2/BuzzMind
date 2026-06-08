@@ -193,15 +193,13 @@
   }
 
   async function removeClass(c) {
-    if (!confirm(`Delete "${c.name}"?`)) return;
     try {
       await BuzzMindAPI.deleteClass(c._id);
       classes = classes.filter((x) => x._id !== c._id);
       updateStats();
       render();
-      Dash.toast('Class deleted.');
     } catch (err) {
-      Dash.toast(err.message || 'Could not delete class', 'error');
+      console.error(err);
     }
   }
 

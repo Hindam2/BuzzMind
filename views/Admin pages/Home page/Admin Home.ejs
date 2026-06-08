@@ -185,15 +185,13 @@
   }
 
   async function removeProf(p) {
-    if (!confirm(`Delete ${p.name}? This removes their account and related data.`)) return;
     try {
       await BuzzMindAPI.deleteProfessor(p.id);
       professors = professors.filter((x) => x.id !== p.id);
       updateStats();
       render();
-      Dash.toast(`${p.name} removed.`);
     } catch (err) {
-      Dash.toast(err.message || 'Could not delete professor', 'error');
+      console.error(err);
     }
   }
 

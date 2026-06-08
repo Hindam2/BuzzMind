@@ -12,6 +12,9 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     Department: { type: String, default: 'GENERAL' },
+    PasswordResetCode: { type: String, default: null },
+    PasswordResetCodeExpiresAt: { type: Date, default: null },
+    PasswordResetCodeSentAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

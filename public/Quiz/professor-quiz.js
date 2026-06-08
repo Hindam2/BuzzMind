@@ -246,6 +246,9 @@ function loadProfQuestion(index) {
 function renderProfAnswers(question) {
   const grid = document.getElementById('profAnswersGrid');
   grid.innerHTML = ''; // safe — no user content here
+  const answerImages = Array.isArray(question.answerImages)
+    ? question.answerImages
+    : ['', '', '', ''];
 
   question.answers.forEach((answerText, i) => {
     const btn = document.createElement('button');
@@ -259,12 +262,25 @@ function renderProfAnswers(question) {
     shape.className = 'answer-shape';
     safeSetText(shape, ANSWER_SHAPES[i]);
 
+    const content = document.createElement('span');
+    content.className = 'answer-content';
+
     const text = document.createElement('span');
     text.className = 'answer-text';
     safeSetText(text, sanitizeText(answerText)); // safe
+    content.appendChild(text);
+
+    const imgUrl = answerImages[i];
+    if (imgUrl && isValidImageUrl(imgUrl)) {
+      const img = document.createElement('img');
+      img.className = 'answer-image';
+      img.src = imgUrl;
+      img.alt = '';
+      content.appendChild(img);
+    }
 
     btn.appendChild(shape);
-    btn.appendChild(text);
+    btn.appendChild(content);
     grid.appendChild(btn);
   });
 }

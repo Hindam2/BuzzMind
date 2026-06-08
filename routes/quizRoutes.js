@@ -61,6 +61,7 @@ router.get('/import/trivia', requireRole('professor', 'admin'), async (req, res,
         text: dec(item.question),
         imageUrl: '',
         answers,
+        answerImages: ['', '', '', ''],
         correctIndex: Math.max(0, answers.indexOf(correct)),
         category: dec(item.category || ''),
         difficulty: item.difficulty || '',
@@ -117,6 +118,9 @@ router.post('/', requireRole('professor', 'admin'), async (req, res, next) => {
       if (!q.text?.trim() || !Array.isArray(q.answers) || q.answers.length !== 4) {
         return res.status(400).json({ error: 'Each question needs text and 4 answers' });
       }
+      if (q.answerImages && (!Array.isArray(q.answerImages) || q.answerImages.length !== 4)) {
+        return res.status(400).json({ error: 'Each question needs 4 answer images' });
+      }
       if (q.correctIndex < 0 || q.correctIndex > 3) {
         return res.status(400).json({ error: 'Invalid correct answer index' });
       }
@@ -130,6 +134,7 @@ router.post('/', requireRole('professor', 'admin'), async (req, res, next) => {
         text: q.text.trim(),
         imageUrl: q.imageUrl || null,
         answers: q.answers.map((a) => String(a).trim()),
+        answerImages: (q.answerImages || ['', '', '', '']).slice(0, 4).map((a) => String(a || '')),
         correctIndex: q.correctIndex,
       })),
       status: status || 'published',

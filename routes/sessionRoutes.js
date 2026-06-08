@@ -34,13 +34,14 @@ function sessionPayload(session, quiz, options = {}) {
   if (options.includeQuestion && quiz && session.questionOpen) {
     const q = quiz.questions[session.currentQuestionIndex];
     if (q) {
-      base.question = {
-        index: session.currentQuestionIndex,
-        text: q.text,
-        imageUrl: q.imageUrl,
-        answers: q.answers,
-        total: quiz.questions.length,
-      };
+        base.question = {
+          index: session.currentQuestionIndex,
+          text: q.text,
+          imageUrl: q.imageUrl,
+          answers: q.answers,
+          answerImages: q.answerImages || ['', '', '', ''],
+          total: quiz.questions.length,
+        };
     }
   }
   if (options.includeCorrect && quiz) {
@@ -206,6 +207,7 @@ router.get('/:id/quiz', async (req, res, next) => {
         text: q.text,
         imageUrl: q.imageUrl,
         answers: q.answers,
+        answerImages: q.answerImages || ['', '', '', ''],
         correctIndex: isProf ? q.correctIndex : undefined,
       })),
       sessionStatus: session.status,

@@ -7,6 +7,11 @@ const questionSchema = new mongoose.Schema({
     type: [String],
     validate: [(v) => v.length === 4, 'Each question must have 4 answers'],
   },
+  answerImages: {
+    type: [String],
+    default: ['', '', '', ''],
+    validate: [(v) => !v || v.length === 4, 'Each question must have 4 answer images'],
+  },
   correctIndex: { type: Number, required: true, min: 0, max: 3 },
 });
 

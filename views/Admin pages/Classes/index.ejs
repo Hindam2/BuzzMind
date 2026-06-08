@@ -200,14 +200,12 @@
   }
 
   async function removeClass(c) {
-    if (!confirm(`Delete "${c.name}"? Assignments and submissions for it will be removed.`)) return;
     try {
       await BuzzMindAPI.deleteAdminClass(c.id);
       classes = classes.filter((x) => x.id !== c.id);
       renderClasses();
-      Dash.toast('Class deleted.');
     } catch (err) {
-      Dash.toast(err.message || 'Could not delete class', 'error');
+      console.error(err);
     }
   }
 
@@ -315,7 +313,6 @@
       const updated = await BuzzMindAPI.removeClassStudent(current.id, sid);
       current.students = updated.students;
       renderStudents();
-      Dash.toast('Student removed.');
       await refreshCard(current.id);
     } catch (err) {
       Dash.toast(err.message || 'Could not remove student', 'error');

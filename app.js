@@ -28,15 +28,16 @@ const server = createServer(app);
 const port = process.env.PORT || 3010;
 const isProduction = process.env.NODE_ENV === 'production';
 
-const io = new Server(server, {
+// Socket.IO setup
+const io = new Server(server, {// Allow CORS for all origins (adjust in production)
   cors: {
-    origin: true,
-    credentials: true,
+    origin: true, // Allow connections from ANY origin
+    credentials: true, // Allow cookies/authentication with requests
   },
 });
 
 const userSockets = new Map();
-
+// Handle Socket.IO connections and maintain a mapping of userId to socketId
 io.on('connection', (socket) => {
   socket.on('user:join', (userId) => {
     if (userId) {
@@ -66,7 +67,7 @@ if (isProduction) {
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(createSessionMiddleware());
-
+// Middleware to hydrate session with user data if userId exists , async to avoid blocking the request if database is slow or down, errors are caught and logged but do not prevent the request from proceeding
 app.use(async (req, res, next) => {
   if (req.session?.userId) {
     try {
@@ -77,6 +78,13 @@ app.use(async (req, res, next) => {
   }
   next();
 });
+
+app.get(
+  ['/forgot-password', '/forgot-password.html', '/Login Page/forgot-password.html'],
+  (req, res) => {
+    res.render('Login/forgot-password');
+  },
+);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -93,14 +101,14 @@ app.use('/api/assignments', assignmentRoutes);
 app.use('/api/overview', overviewRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/chat', chatRoutes);
-
+// 404 handler for API and non-API routes
 app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'Not found' });
   }
   res.status(404).send('Page not found');
 });
-
+// Global error handler for API and non-API routes, with special handling for Multer errors and upload filter errors
 app.use((err, req, res, next) => {
   const isMulter = err && err.name === 'MulterError';
   const isUploadFilter =

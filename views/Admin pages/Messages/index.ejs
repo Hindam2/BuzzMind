@@ -107,10 +107,8 @@
   async function act(m, action) {
     try {
       if (action === 'del') {
-        if (!confirm('Delete this message permanently?')) return;
         await BuzzMindAPI.deleteMessage(m.id);
         messages = messages.filter((x) => x.id !== m.id);
-        Dash.toast('Message deleted.');
       } else {
         const status = action === 'archive' ? 'archived' : action;
         await BuzzMindAPI.updateMessage(m.id, status);

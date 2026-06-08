@@ -687,19 +687,6 @@ svg.ic-svg {
   text-overflow: ellipsis;
 }
 
-.class-card-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.class-card-progress .row-between {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 .class-card-foot {
   align-items: center;
   flex-wrap: wrap;

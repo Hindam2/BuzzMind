@@ -11,12 +11,18 @@
 // ---- State ----
 let currentQuestionIndex = 0;
 let timerInterval = null;
-let timeLeft = 0;
+let quizEndsAt = null; // shared deadline (ms epoch) for the WHOLE quiz
 let lobbyPollInterval = null;
 let simulationTimers = [];
-let submittedCount = 0;
-let scores = SESSION_STUDENTS.map((s) => ({ id: '', name: s.name, score: 0 }));
+let submittedCount = 0; // simulation only (non-live demo)
+let answeredTotal = 0; // live: total answers received across all players
+let expectedTotal = 0; // live: players * questions
+let scores = SESSION_STUDENTS.map((s) => ({ id: '', name: s.name, avatarUrl: '', score: 0 }));
 let finalizing = false;
+
+function rememberDeadline(data) {
+  if (data && data.endsAt) quizEndsAt = new Date(data.endsAt).getTime();
+}
 
 // ---- Real-time socket (optional) ----
 let __bm_socket = null;
@@ -47,17 +53,20 @@ if (typeof io !== 'undefined') {
 
     __bm_socket.on('session:playersUpdated', (payload) => {
       if (!isCurrentLiveSession(payload)) return;
+      rememberDeadline(payload);
       const players = Array.isArray(payload.players) ? payload.players : [];
       renderLobbyPlayers(players);
       syncScores(players);
-      submittedCount = Number(payload.answeredCount) || 0;
+      if (typeof payload.answeredTotal === 'number') answeredTotal = payload.answeredTotal;
+      if (typeof payload.expectedTotal === 'number') expectedTotal = payload.expectedTotal;
       updateSubmittedDisplay();
       updateLeaderboard();
     });
 
     __bm_socket.on('session:answerSubmitted', (payload) => {
       if (!isCurrentLiveSession(payload)) return;
-      submittedCount = Number(payload.answeredCount) || submittedCount;
+      if (typeof payload.answeredTotal === 'number') answeredTotal = payload.answeredTotal;
+      if (typeof payload.expectedTotal === 'number') expectedTotal = payload.expectedTotal;
       if (Array.isArray(payload.leaderboard)) {
         syncLeaderboard(payload.leaderboard);
       } else {
@@ -105,6 +114,7 @@ function startProfessorRound() {
   joinLiveSessionSocket();
   updateSubmittedDisplay();
   updateLeaderboard();
+  startProfQuizTimer();
   loadProfQuestion(currentQuestionIndex);
 }
 
@@ -145,8 +155,15 @@ function renderLobbyPlayers(players = []) {
 
   players.forEach((player) => {
     const item = document.createElement('div');
-    item.className = 'player-card';
-    safeSetText(item, sanitizeText(player.displayName || 'Student'));
+    const name = sanitizeText(player.displayName || 'Student');
+    if (window.BuzzAvatar) {
+      item.className = 'player-card has-avatar';
+      item.innerHTML = `${BuzzAvatar.html(name, player.id || name, player.avatarUrl, 30)}<span class="player-name"></span>`;
+      item.querySelector('.player-name').textContent = name;
+    } else {
+      item.className = 'player-card';
+      safeSetText(item, name);
+    }
     listEl.appendChild(item);
   });
 }
@@ -156,6 +173,7 @@ function syncScores(players = []) {
     scores = players.map((p) => ({
       id: String(p.id || p._id || ''),
       name: p.displayName || p.name || 'Student',
+      avatarUrl: p.avatarUrl || '',
       score: Number(p.score) || 0,
     }));
   } else {
@@ -167,6 +185,7 @@ function syncLeaderboard(leaderboard = []) {
   scores = leaderboard.map((entry) => ({
     id: String(entry.id || entry.playerId || ''),
     name: entry.name || entry.displayName || 'Student',
+    avatarUrl: entry.avatarUrl || '',
     score: Number(entry.score) || 0,
   }));
 }
@@ -179,8 +198,9 @@ function upsertScore(entry) {
     name: entry.name || 'Student',
     score: Number(entry.score) || 0,
   };
+  if (entry.avatarUrl) next.avatarUrl = entry.avatarUrl; // don't clobber a known avatar
   if (idx >= 0) scores[idx] = { ...scores[idx], ...next };
-  else scores.push(next);
+  else scores.push({ avatarUrl: '', ...next });
 }
 
 function clearSimulationTimers() {
@@ -212,11 +232,13 @@ async function refreshProfessorLobby() {
   try {
     const session = await BuzzMindAPI.getSession(window.LIVE_SESSION_ID);
     const players = Array.isArray(session.players) ? session.players : [];
+    rememberDeadline(session);
 
     safeSetText(document.getElementById('lobbyGamePin'), session.pinFormatted || formatPin(session.pin));
     renderLobbyPlayers(players);
     syncScores(players);
-    submittedCount = Number(session.answeredCount) || 0;
+    if (typeof session.answeredTotal === 'number') answeredTotal = session.answeredTotal;
+    if (typeof session.expectedTotal === 'number') expectedTotal = session.expectedTotal;
     updateSubmittedDisplay();
     updateLeaderboard();
 
@@ -257,10 +279,10 @@ async function openLaunchLobby() {
       setLobbyStartDisabled(true);
       updateLobbyStatus('Starting quiz...');
       const started = await BuzzMindAPI.startSession(window.LIVE_SESSION_ID);
+      rememberDeadline(started);
       if (typeof started.currentQuestionIndex === 'number') {
         currentQuestionIndex = started.currentQuestionIndex;
       }
-      submittedCount = Number(started.answeredCount) || 0;
       closeLaunchLobby();
       startProfessorRound();
     } catch (err) {
@@ -310,20 +332,12 @@ function loadProfQuestion(index) {
   // Render answer options (display only for professor)
   renderProfAnswers(question);
 
-  // Toggle Next/End button visibility
+  // Students are self-paced now, so "Next" only browses the professor's own
+  // preview. "End Quiz" stays available throughout to end early for everyone.
   const nextBtn = document.getElementById('nextBtn');
   const endBtn = document.getElementById('endBtn');
-  if (index === total - 1) {
-    // Last question — show "End Quiz" instead
-    if (nextBtn) nextBtn.style.display = 'none';
-    if (endBtn) endBtn.style.display = 'block';
-  } else {
-    if (nextBtn) nextBtn.style.display = 'block';
-    if (endBtn) endBtn.style.display = 'none';
-  }
-
-  // Start timer
-  startProfTimer(QUIZ_DATA.totalTime);
+  if (nextBtn) nextBtn.style.display = index === total - 1 ? 'none' : 'block';
+  if (endBtn) endBtn.style.display = 'block';
 
   if (!isLiveSession()) simulateSubmissions();
 }
@@ -379,29 +393,12 @@ function renderProfAnswers(question) {
  * Advance to the next question.
  * Called by the "Next Question" button.
  */
-async function nextQuestion() {
-  clearInterval(timerInterval);
+function nextQuestion() {
+  // Students are self-paced, so this only flips the professor's own preview
+  // forward — it does NOT advance anyone else and keeps the shared timer running.
   clearSimulationTimers();
-  if (window.LIVE_SESSION_ID && typeof BuzzMindAPI !== 'undefined') {
-    try {
-      const session = await BuzzMindAPI.nextQuestion(window.LIVE_SESSION_ID);
-      if (session.finished) {
-        if (Array.isArray(session.leaderboard)) syncLeaderboard(session.leaderboard);
-        saveFinalScores();
-        return;
-      }
-      if (typeof session.currentQuestionIndex === 'number') {
-        currentQuestionIndex = session.currentQuestionIndex;
-        submittedCount = Number(session.answeredCount) || 0;
-        loadProfQuestion(currentQuestionIndex);
-        return;
-      }
-    } catch (err) {
-      console.error('Failed to advance live session:', err);
-    }
-  }
-  currentQuestionIndex++;
-  if (currentQuestionIndex < QUIZ_DATA.questions.length) {
+  if (currentQuestionIndex < QUIZ_DATA.questions.length - 1) {
+    currentQuestionIndex += 1;
     loadProfQuestion(currentQuestionIndex);
   }
 }
@@ -441,31 +438,40 @@ function saveFinalScores() {
  * Start the professor's countdown timer.
  * When it hits 0, auto-advance is optional (professor still controls).
  */
-function startProfTimer(seconds) {
-  timeLeft = seconds;
-  updateProfTimerDisplay(timeLeft);
-
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateProfTimerDisplay(timeLeft);
-
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-    }
-  }, 1000);
+function profRemainingSeconds() {
+  if (quizEndsAt) return Math.max(0, Math.round((quizEndsAt - Date.now()) / 1000));
+  return (Number(QUIZ_DATA.totalTime) || 20) * 60;
 }
 
 /**
- * Update the professor's timer text.
+ * Start the single shared whole-quiz countdown for the professor's monitor.
+ * When it reaches zero (live), the quiz is ended for everyone.
+ */
+function startProfQuizTimer() {
+  clearInterval(timerInterval);
+  updateProfTimerDisplay(profRemainingSeconds());
+  timerInterval = setInterval(() => {
+    const secs = profRemainingSeconds();
+    updateProfTimerDisplay(secs);
+    if (secs <= 0) {
+      clearInterval(timerInterval);
+      if (isLiveSession()) endQuiz();
+    }
+  }, 500);
+}
+
+/**
+ * Update the professor's timer text (mm:ss).
  * @param {number} seconds
  */
 function updateProfTimerDisplay(seconds) {
   const el = document.getElementById('profTimer');
-  safeSetText(el, `${seconds}s`);
-  // Highlight red when urgent
-  if (el) {
-    el.style.color = seconds <= 5 ? '#ef4444' : 'var(--purple)';
-  }
+  if (!el) return;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  safeSetText(el, `${m}:${String(s).padStart(2, '0')}`);
+  // Red in the last 30s; otherwise let the gradient style show.
+  el.style.color = seconds <= 30 ? '#ef4444' : '';
 }
 
 /**
@@ -473,14 +479,19 @@ function updateProfTimerDisplay(seconds) {
  */
 function updateSubmittedDisplay() {
   const countEl = document.getElementById('submittedCount');
-  const totalStudents = scores.length;
-  safeSetText(countEl, `${submittedCount} / ${totalStudents}`);
-
   const bar = document.getElementById('submittedBar');
-  if (bar) {
-    const pct = totalStudents > 0 ? (submittedCount / totalStudents) * 100 : 0;
-    bar.style.width = `${pct}%`;
+  let done;
+  let total;
+  if (isLiveSession()) {
+    // Self-paced: show total answers received across the whole quiz.
+    done = answeredTotal;
+    total = expectedTotal || scores.length * (QUIZ_DATA.questions?.length || 0);
+  } else {
+    done = submittedCount;
+    total = scores.length;
   }
+  safeSetText(countEl, `${done} / ${total}`);
+  if (bar) bar.style.width = `${total > 0 ? (done / total) * 100 : 0}%`;
 }
 
 /**
@@ -539,10 +550,21 @@ function updateLeaderboard() {
     rank.className = `lb-rank rank-${i + 1}`;
     safeSetText(rank, `#${i + 1}`);
 
-    // Name (sanitized before display)
+    // Avatar + name (sanitized before display)
+    const person = document.createElement('div');
+    person.className = 'lb-person';
+    if (window.BuzzAvatar) {
+      person.innerHTML = BuzzAvatar.html(
+        student.name,
+        student.id || student.name,
+        student.avatarUrl,
+        28,
+      );
+    }
     const name = document.createElement('span');
     name.className = 'lb-name';
     safeSetText(name, sanitizeText(student.name));
+    person.appendChild(name);
 
     // Score
     const scoreEl = document.createElement('span');
@@ -550,7 +572,7 @@ function updateLeaderboard() {
     safeSetText(scoreEl, student.score.toLocaleString());
 
     item.appendChild(rank);
-    item.appendChild(name);
+    item.appendChild(person);
     item.appendChild(scoreEl);
     list.appendChild(item);
   });

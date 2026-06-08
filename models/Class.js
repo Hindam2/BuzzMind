@@ -14,7 +14,6 @@ const classSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     schedule: { type: String, default: 'Schedule TBD' },
     level: { type: String, default: 'LEVEL 100' },
-    progress: { type: Number, default: 0, min: 0, max: 100 },
     coverGradient: {
       type: String,
       default: 'linear-gradient(135deg,#0f2027,#203a43)',

@@ -358,7 +358,6 @@ function classPayload(cls, extra = {}) {
     name: cls.name,
     schedule: cls.schedule,
     level: cls.level,
-    progress: cls.progress,
     coverGradient: cls.coverGradient,
     imageUrl: cls.imageUrl || '',
     professor: cls.professor,
@@ -421,7 +420,7 @@ router.get('/classes/:id', async (req, res, next) => {
 
 router.post('/classes', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress, professorId, imageUrl } = req.body;
+    const { name, schedule, level, professorId, imageUrl } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: 'Class name is required' });
     if (!isId(professorId)) {
       return res.status(400).json({ error: 'A professor must be assigned' });
@@ -433,7 +432,6 @@ router.post('/classes', async (req, res, next) => {
       name: name.trim(),
       schedule: schedule || 'Schedule TBD',
       level: level || 'LEVEL 100',
-      progress: progress ?? 0,
       coverGradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
       imageUrl: cleanImageUrl(imageUrl) || '',
       professor: prof._id,
@@ -447,7 +445,7 @@ router.post('/classes', async (req, res, next) => {
 router.put('/classes/:id', async (req, res, next) => {
   try {
     if (!isId(req.params.id)) return res.status(400).json({ error: 'Invalid id' });
-    const { name, schedule, level, progress, professorId, imageUrl } = req.body;
+    const { name, schedule, level, professorId, imageUrl } = req.body;
     const cls = await Class.findById(req.params.id);
     if (!cls) return res.status(404).json({ error: 'Class not found' });
 
@@ -460,7 +458,6 @@ router.put('/classes/:id', async (req, res, next) => {
     if (name?.trim()) cls.name = name.trim();
     if (schedule !== undefined) cls.schedule = schedule;
     if (level !== undefined) cls.level = level;
-    if (progress !== undefined) cls.progress = progress;
     if (imageUrl !== undefined) cls.imageUrl = cleanImageUrl(imageUrl) || '';
 
     await cls.save();

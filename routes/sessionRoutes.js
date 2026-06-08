@@ -16,6 +16,8 @@ function sessionPayload(session, quiz, options = {}) {
   const answeredCount = session.players.filter((p) =>
     p.answers.some((a) => a.questionIndex === questionIndex),
   ).length;
+  const totalQuestions = quiz?.questions?.length || 0;
+  const answeredTotal = session.players.reduce((sum, p) => sum + p.answers.length, 0);
   const base = {
     sessionId: session._id,
     pin: session.pin,
@@ -24,15 +26,20 @@ function sessionPayload(session, quiz, options = {}) {
     currentQuestionIndex: session.currentQuestionIndex,
     questionOpen: session.questionOpen,
     answeredCount,
+    answeredTotal,
+    expectedTotal: totalQuestions * session.players.length,
     playerCount: session.players.length,
     quizTitle: quiz?.title,
-    totalQuestions: quiz?.questions?.length || 0,
+    totalQuestions,
+    // Total quiz time, in MINUTES (shared countdown shown to everyone).
     totalTime: quiz?.totalTime || 20,
+    endsAt: session.endsAt || null,
   };
   if (options.includePlayers) {
     base.players = session.players.map((p) => ({
       id: p._id,
       displayName: p.displayName,
+      avatarUrl: p.avatarUrl || '',
       score: p.score,
     }));
   }
@@ -83,10 +90,13 @@ router.post('/join', async (req, res, next) => {
       return res.status(400).json({ error: 'PIN must be 6 digits' });
     }
 
-    // Only use the logged-in account name when the joiner is a student (never professor/admin)
-    if (!displayName && req.session.userId && userRole === 'student') {
-      const user = await User.findById(req.session.userId).select('Username Name');
-      displayName = (user?.Username || user?.Name || '').trim();
+    // Only use the logged-in account (name + avatar) when the joiner is a
+    // student (never professor/admin), so everyone sees the student's avatar.
+    let avatarUrl = '';
+    if (req.session.userId && userRole === 'student') {
+      const user = await User.findById(req.session.userId).select('Username Name AvatarUrl');
+      if (!displayName) displayName = (user?.Username || user?.Name || '').trim();
+      avatarUrl = user?.AvatarUrl || '';
     }
 
     if (!displayName) {
@@ -113,6 +123,7 @@ router.post('/join', async (req, res, next) => {
       session.players.push({
         userId: playerUserId,
         displayName: displayName.slice(0, 50),
+        avatarUrl,
         score: 0,
       });
       await session.save();
@@ -130,6 +141,7 @@ router.post('/join', async (req, res, next) => {
               player: {
                 id: joinedPlayer._id.toString(),
                 displayName: joinedPlayer.displayName,
+                avatarUrl: joinedPlayer.avatarUrl || '',
                 score: joinedPlayer.score || 0,
               },
             });
@@ -146,6 +158,7 @@ router.post('/join', async (req, res, next) => {
         player: {
           id: joinedPlayer._id.toString(),
           displayName: joinedPlayer.displayName,
+          avatarUrl: joinedPlayer.avatarUrl || '',
           score: joinedPlayer.score || 0,
         },
       });
@@ -247,6 +260,7 @@ router.get('/:id/quiz', async (req, res, next) => {
       sessionStatus: session.status,
       currentQuestionIndex: session.currentQuestionIndex,
       questionOpen: session.questionOpen,
+      endsAt: session.endsAt || null,
     });
   } catch (err) {
     next(err);
@@ -260,12 +274,16 @@ router.post('/:id/start', requireAuth, requireRole('professor', 'admin'), async 
       return res.status(404).json({ error: 'Session not found' });
     }
 
+    const quiz = await Quiz.findById(session.quiz);
+    const totalMinutes = Number(quiz?.totalTime) || 20;
+
     session.status = 'active';
     session.currentQuestionIndex = 0;
     session.questionOpen = true;
+    // Shared deadline: every player sees the same remaining time.
+    session.endsAt = new Date(Date.now() + totalMinutes * 60 * 1000);
     await session.save();
 
-    const quiz = await Quiz.findById(session.quiz);
     const studentPayload = sessionPayload(session, quiz, { includeQuestion: true });
     emitSessionEvent(req, session, 'session:started', studentPayload);
     res.json(sessionPayload(session, quiz, { includeQuestion: true, includeCorrect: true }));
@@ -343,14 +361,21 @@ router.post('/:id/end', requireAuth, requireRole('professor', 'admin'), async (r
 
 router.post('/:id/answer', async (req, res, next) => {
   try {
-    const { playerId, answerIndex, displayName } = req.body;
+    const { playerId, answerIndex, displayName, questionIndex } = req.body;
     const session = await GameSession.findById(req.params.id);
-    if (!session || session.status !== 'active' || !session.questionOpen) {
+    if (!session || session.status !== 'active') {
       return res.status(400).json({ error: 'Cannot submit answer now' });
+    }
+    // Enforce the shared quiz deadline (small grace for clock skew/latency).
+    if (session.endsAt && Date.now() > new Date(session.endsAt).getTime() + 2000) {
+      return res.status(400).json({ error: 'Time is up' });
     }
 
     const quiz = await Quiz.findById(session.quiz);
-    const qIndex = session.currentQuestionIndex;
+    // Self-paced: score the question the student is actually on.
+    const qIndex = Number.isInteger(Number(questionIndex))
+      ? Number(questionIndex)
+      : session.currentQuestionIndex;
     const question = quiz.questions[qIndex];
     if (!question) return res.status(400).json({ error: 'No active question' });
 
@@ -381,6 +406,8 @@ router.post('/:id/answer', async (req, res, next) => {
     const answeredCount = session.players.filter((p) =>
       p.answers.some((a) => a.questionIndex === qIndex),
     ).length;
+    const answeredTotal = session.players.reduce((sum, p) => sum + p.answers.length, 0);
+    const expectedTotal = session.players.length * quiz.questions.length;
     emitSessionEvent(req, session, 'session:answerSubmitted', {
       sessionId: session._id.toString(),
       questionIndex: qIndex,
@@ -388,6 +415,8 @@ router.post('/:id/answer', async (req, res, next) => {
       displayName: player.displayName,
       score: player.score,
       answeredCount,
+      answeredTotal,
+      expectedTotal,
       totalPlayers: session.players.length,
       leaderboard: buildLeaderboard(session),
     });
@@ -417,7 +446,9 @@ function buildLeaderboard(session) {
     .sort((a, b) => b.score - a.score)
     .map((p, i) => ({
       rank: i + 1,
+      id: p._id,
       name: p.displayName,
+      avatarUrl: p.avatarUrl || '',
       score: p.score,
     }));
 }

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const playerSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   displayName: { type: String, required: true, trim: true },
+  avatarUrl: { type: String, default: '' },
   score: { type: Number, default: 0 },
   answers: [
     {
@@ -32,6 +33,8 @@ const gameSessionSchema = new mongoose.Schema(
     questionOpen: { type: Boolean, default: false },
     players: [playerSchema],
     launchedAt: { type: Date, default: Date.now },
+    // When the whole quiz (shared countdown) is scheduled to end. Set on start.
+    endsAt: { type: Date, default: null },
     endedAt: { type: Date, default: null },
   },
   { timestamps: true },

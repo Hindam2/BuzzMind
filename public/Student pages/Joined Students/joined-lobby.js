@@ -18,11 +18,29 @@ function renderPlayers(players = []) {
   players.forEach((player) => {
     const card = document.createElement('div');
     card.className = 'player-card';
-    card.textContent = player.displayName || 'Player';
+    const name = player.displayName || 'Player';
+    if (window.BuzzAvatar) {
+      card.innerHTML = `${BuzzAvatar.html(name, player.id || name, player.avatarUrl, 36)}<span class="player-name"></span>`;
+      card.querySelector('.player-name').textContent = name;
+    } else {
+      card.textContent = name;
+    }
     grid.appendChild(card);
   });
 
   setText('.players-count', players.length);
+}
+
+async function fillNavAvatar() {
+  if (typeof BuzzMindAPI === 'undefined' || !window.BuzzAvatar) return;
+  const el = document.querySelector('.nav-actions .avatar');
+  if (!el) return;
+  try {
+    const me = await BuzzMindAPI.getMe();
+    BuzzAvatar.apply(el, me.name || 'You', me.avatarUrl, me.id || me.name);
+  } catch (_) {
+    /* not logged in */
+  }
 }
 
 function goToQuiz(sessionId) {
@@ -111,6 +129,7 @@ async function refreshLobby() {
 document.addEventListener('DOMContentLoaded', () => {
   setText('.pin-number', gamePin ? gamePin.replace(/(\d{3})(\d{3})/, '$1 $2') : '---');
 
+  fillNavAvatar();
   initLobbySocket();
   refreshLobby();
   setInterval(refreshLobby, 2000);

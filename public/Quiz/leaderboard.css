@@ -213,6 +213,13 @@ body {
   color: #92400e;
 }
 
+.lb-person {
+  align-items: center;
+  display: flex;
+  gap: 0.7rem;
+  min-width: 0;
+}
+
 .lb-name {
   color: var(--dark);
   font-size: 0.95rem;

@@ -352,7 +352,6 @@
     'Search classes...': 'ابحث عن الفصول...',
     'Create Quiz': 'إنشاء اختبار',
     'Active classes': 'الفصول النشطة',
-    'Avg. progress': 'متوسط التقدم',
     Levels: 'المستويات',
     'Add a new classroom to your dashboard.':
       'أضف فصلاً جديدًا إلى لوحة تحكمك.',

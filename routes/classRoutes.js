@@ -95,7 +95,7 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress, imageUrl } = req.body;
+    const { name, schedule, level, imageUrl } = req.body;
     if (!name?.trim()) {
       return res.status(400).json({ error: 'Class name is required' });
     }
@@ -103,7 +103,6 @@ router.post('/', async (req, res, next) => {
       name: name.trim(),
       schedule: schedule || 'Schedule TBD',
       level: level || 'LEVEL 100',
-      progress: progress ?? 0,
       coverGradient: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
       imageUrl: cleanImageUrl(imageUrl) || '',
       professor: req.user._id,
@@ -129,14 +128,13 @@ router.get('/:id', async (req, res, next) => {
 
 router.put('/:id', async (req, res, next) => {
   try {
-    const { name, schedule, level, progress, imageUrl } = req.body;
+    const { name, schedule, level, imageUrl } = req.body;
     const cls = await Class.findOneAndUpdate(
       { _id: req.params.id, professor: req.user._id },
       {
         ...(name && { name: name.trim() }),
         ...(schedule !== undefined && { schedule }),
         ...(level !== undefined && { level }),
-        ...(progress !== undefined && { progress }),
         ...(imageUrl !== undefined && { imageUrl: cleanImageUrl(imageUrl) || '' }),
       },
       { new: true },

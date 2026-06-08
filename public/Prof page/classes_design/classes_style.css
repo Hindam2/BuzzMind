@@ -133,21 +133,6 @@
   margin: 10px 0 14px;
 }
 
-.banner-progress {
-  background: rgba(255, 255, 255, 0.16);
-  border-radius: 999px;
-  height: 9px;
-  overflow: hidden;
-}
-
-.banner-progress-fill {
-  background: linear-gradient(90deg, var(--green), #75e7b9);
-  border-radius: inherit;
-  height: 100%;
-  transition: width 0.4s ease;
-  width: 0;
-}
-
 .banner-quote {
   color: rgba(255, 255, 255, 0.68);
   font-size: 13px;

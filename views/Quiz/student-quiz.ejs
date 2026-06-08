@@ -27,8 +27,8 @@
             <circle class="timer-bg" cx="30" cy="30" r="26" />
             <circle class="timer-ring" id="timerRing" cx="30" cy="30" r="26" />
           </svg>
-          <span class="timer-number" id="timerNumber">20</span>
-          <span class="timer-label">SECONDS</span>
+          <span class="timer-number" id="timerNumber">--:--</span>
+          <span class="timer-label">TIME LEFT</span>
         </div>
       </div>
 
@@ -54,6 +54,15 @@
         <span id="feedbackIcon"></span>
         <span id="feedbackText"></span>
       </div>
+
+      <!-- Self-paced control: student advances themselves -->
+      <button
+        class="quiz-next-btn"
+        id="nextQuestionBtn"
+        type="button"
+        style="display: none">
+        Next question
+      </button>
     </main>
 
     <!-- ===== RESULTS SCREEN (shown after all questions) ===== -->

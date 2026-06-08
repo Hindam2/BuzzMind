@@ -60,7 +60,7 @@ function sanitizeText(input) {
 
 const QUIZ_DATA = {
   title: "World Geography Quiz",
-  totalTime: 20, // seconds per question
+  totalTime: 20, // total quiz time in MINUTES (shared countdown for everyone)
 
   questions: [
     {

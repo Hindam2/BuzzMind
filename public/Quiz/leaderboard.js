@@ -25,16 +25,27 @@ function renderRankings(entries) {
       'lb-rank' + (i === 0 ? ' gold' : i === 1 ? ' silver' : i === 2 ? ' bronze' : '');
     rank.textContent = `#${i + 1}`;
 
+    const person = document.createElement('div');
+    person.className = 'lb-person';
+    if (window.BuzzAvatar) {
+      person.innerHTML = BuzzAvatar.html(
+        entry.name || 'Player',
+        entry.id || entry.name,
+        entry.avatarUrl,
+        34,
+      );
+    }
     const name = document.createElement('span');
     name.className = 'lb-name';
     name.textContent = entry.name || 'Player';
+    person.appendChild(name);
 
     const pts = document.createElement('span');
     pts.className = 'lb-score';
     pts.textContent = entry.score ? `${Number(entry.score).toLocaleString()} pts` : '0 pts';
 
     item.appendChild(rank);
-    item.appendChild(name);
+    item.appendChild(person);
     item.appendChild(pts);
     rankingsList.appendChild(item);
   });
@@ -71,7 +82,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const data = await BuzzMindAPI.getLeaderboard(sessionId);
       rankings = (data.leaderboard || []).map((row) => ({
+        id: row.id,
         name: row.name,
+        avatarUrl: row.avatarUrl || '',
         score: row.score,
       }));
 

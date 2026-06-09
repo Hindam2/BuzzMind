@@ -70,9 +70,12 @@ app.set('userSockets', userSockets);
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-if (isProduction) {
-  app.set('trust proxy', 1);
-}
+// Enable trust proxy so secure cookies and IPs work correctly behind a proxy/load balancer.
+// This is important on hosts like Render where TLS is terminated before the app.
+app.set('trust proxy', 1);
+
+// Log presence of important env vars (do not print secrets)
+console.log('ENV:', 'NODE_ENV=', process.env.NODE_ENV || '', 'MONGODB_URI=', !!process.env.MONGODB_URI, 'SESSION_SECRET=', !!process.env.SESSION_SECRET, 'COOKIE_SECURE=', process.env.COOKIE_SECURE || '');
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -86,6 +89,20 @@ app.use(async (req, res, next) => {
       console.error('Session hydrate failed:', err.message);
     }
   }
+  next();
+});
+
+// Simple request/response logger to help debug deployment issues (prints cookies and session presence)
+app.use((req, res, next) => {
+  console.log(`REQ ${req.method} ${req.originalUrl} cookie=${req.headers.cookie || ''}`);
+  res.on('finish', () => {
+    try {
+      const sessionExists = !!(req.session && req.session.userId);
+      console.log(`RES ${res.statusCode} ${req.method} ${req.originalUrl} sessionUser=${sessionExists}`);
+    } catch (e) {
+      console.log('RES logger error', e && e.message);
+    }
+  });
   next();
 });
 
